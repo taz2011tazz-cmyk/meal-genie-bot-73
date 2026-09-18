@@ -60,7 +60,7 @@ function extractJson(text: string): unknown {
 }
 
 async function callModel(prompt: string): Promise<GeneratedRecipe> {
-  const key = process.env.LOVABLE_API_KEY;
+  const key = process.env["LOVABLE_API_KEY"];
   if (!key) throw new Error("Missing LOVABLE_API_KEY");
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -171,7 +171,7 @@ export const generateRecipe = createServerFn({ method: "POST" })
         .limit(1);
       if (exact && exact.length > 0) {
         void trackEvent({ user_id: context.userId, kind: "ai", name: "ai.generate_recipe", latency_ms: Date.now() - t0, success: true, metadata: { query: data.query, cached: true } });
-        return { slug: exact[0].slug, cached: true };
+        return { slug: exact[0]?.slug ?? "", cached: true };
       }
 
       const { data: fuzzy } = await supabaseAdmin
@@ -181,7 +181,7 @@ export const generateRecipe = createServerFn({ method: "POST" })
         .limit(1);
       if (fuzzy && fuzzy.length > 0) {
         void trackEvent({ user_id: context.userId, kind: "ai", name: "ai.generate_recipe", latency_ms: Date.now() - t0, success: true, metadata: { query: data.query, cached: true } });
-        return { slug: fuzzy[0].slug, cached: true };
+        return { slug: fuzzy[0]?.slug ?? "", cached: true };
       }
 
       const recipe = await callModel(
@@ -217,7 +217,7 @@ export const scanKitchen = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await enforceRateLimit("ai_vision", context.userId, 10);
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
     const t0 = Date.now();
     try {
@@ -284,7 +284,7 @@ export const scanDish = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await enforceRateLimit("ai_vision", context.userId, 10);
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
     const t0 = Date.now();
     try {
@@ -328,7 +328,7 @@ export const askFoodQuestion = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => z.object({ question: z.string().trim().min(1).max(500) }).parse(v))
   .handler(async ({ data, context }) => {
     await enforceRateLimit("ai_chat", context.userId, 20);
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
     const t0 = Date.now();
     try {
@@ -390,7 +390,7 @@ export const regenerateRecipeImage = createServerFn({ method: "POST" })
       .single();
     if (rErr || !recipe) throw new Error("Recipe not found");
 
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
     const prompt =

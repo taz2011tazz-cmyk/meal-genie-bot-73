@@ -23,7 +23,7 @@ function applyTheme(resolved: ResolvedTheme) {
   root.classList.remove("dark", "fun");
   if (resolved === "dark") root.classList.add("dark");
   if (resolved === "fun") root.classList.add("fun");
-  root.dataset.theme = resolved;
+  root.dataset["theme"] = resolved;
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

@@ -44,8 +44,14 @@ export function RecipeRatings({ recipeId }: { recipeId: string }) {
   }, [mine]);
 
   async function submit() {
-    if (!user) return toast.info("Sign in to rate");
-    if (!myRating) return toast.info("Pick 1–5 stars");
+    if (!user) {
+      toast.info("Sign in to rate");
+      return;
+    }
+    if (!myRating) {
+      toast.info("Pick 1–5 stars");
+      return;
+    }
     setSaving(true);
     try {
       const { error } = await supabase

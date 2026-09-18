@@ -127,7 +127,7 @@ export const generateVisualExplanation = createServerFn({ method: "POST" })
 
     await enforceRateLimit("ai_visual", context.userId, 15);
 
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
     const t0 = Date.now();

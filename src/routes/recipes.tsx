@@ -26,6 +26,14 @@ const CATEGORIES = [
 type RecipeSearch = { c?: string };
 
 export const Route = createFileRoute("/recipes")({
+  head: () => ({ meta: [
+    { title: "Discover recipes | MealMate" },
+    { name: "description", content: "Browse South African favourites, global classics, and personalised recipe ideas." },
+    { property: "og:title", content: "Discover recipes | MealMate" },
+    { property: "og:description", content: "Browse South African favourites, global classics, and personalised recipe ideas." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   validateSearch: (search: Record<string, unknown>): RecipeSearch => ({
     c: typeof search.c === "string" ? search.c : undefined,
   }),

@@ -47,7 +47,7 @@ export function UpgradeModalProvider({ children }: { children: ReactNode }) {
   return (
     <UpgradeCtx.Provider value={ctx}>
       {children}
-      {isOpen && <PaywallSheet reason={reason} onClose={() => setIsOpen(false)} />}
+      {isOpen && <PaywallSheet {...(reason ? { reason } : {})} onClose={() => setIsOpen(false)} />}
     </UpgradeCtx.Provider>
   );
 }
@@ -110,7 +110,7 @@ function PaywallSheet({ reason, onClose }: { reason?: string; onClose: () => voi
         </button>
 
         <div className="relative flex h-full flex-col overflow-y-auto px-5 pb-8 pt-8 sm:px-8">
-          <PaywallHeader reason={reason} />
+          <PaywallHeader {...(reason ? { reason } : {})} />
           <BillingToggle value={billing} onChange={setBilling} />
 
           <div className="mt-5 space-y-3">

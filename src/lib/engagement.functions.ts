@@ -54,8 +54,8 @@ export const listRecipeRatings = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => z.object({ recipeId: z.string().uuid() }).parse(v))
   .handler(async ({ data }) => {
     const { createClient } = await import("@supabase/supabase-js");
-    const url = process.env.SUPABASE_URL!;
-    const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
+    const url = process.env["SUPABASE_URL"]!;
+    const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
     const client = createClient(url, key, {
       auth: { persistSession: false, autoRefreshToken: false },
       global: {

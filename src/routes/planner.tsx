@@ -18,6 +18,14 @@ import {
 } from "@/components/ui/select";
 
 export const Route = createFileRoute("/planner")({
+  head: () => ({ meta: [
+    { title: "Meal planner | MealMate" },
+    { name: "description", content: "Plan a week of meals and turn your plan into a grocery list." },
+    { property: "og:title", content: "Meal planner | MealMate" },
+    { property: "og:description", content: "Plan a week of meals and turn your plan into a grocery list." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: PlannerPage,
 });
 

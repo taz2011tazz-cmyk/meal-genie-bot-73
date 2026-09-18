@@ -10,6 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/auth")({
+  head: () => ({ meta: [
+    { title: "Sign in | MealMate" },
+    { name: "description", content: "Sign in or create your MealMate account to save recipes, lists, and meal plans." },
+    { property: "og:title", content: "Sign in | MealMate" },
+    { property: "og:description", content: "Access your saved recipes, lists, and meal plans." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AuthPage,
 });
 

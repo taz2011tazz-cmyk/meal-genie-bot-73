@@ -13,6 +13,14 @@ import { toast } from "sonner";
 import { awardXp } from "@/lib/xp.functions";
 
 export const Route = createFileRoute("/list")({
+  head: () => ({ meta: [
+    { title: "My grocery list | MealMate" },
+    { name: "description", content: "Build and check off your personal MealMate grocery list." },
+    { property: "og:title", content: "My grocery list | MealMate" },
+    { property: "og:description", content: "Build and check off your personal MealMate grocery list." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: ListPage,
 });
 
