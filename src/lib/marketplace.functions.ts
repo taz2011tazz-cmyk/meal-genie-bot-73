@@ -120,7 +120,12 @@ export const partnerSetPause = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => PauseSchema.parse(v))
   .handler(async ({ data, context }) => {
     const { setOrderingPause } = await import("@/lib/marketplace.server");
-    return setOrderingPause(context.userId, data);
+    return setOrderingPause(context.userId, {
+      restaurantId: data.restaurantId,
+      is_accepting_orders: data.is_accepting_orders,
+      ...(data.pause_message !== undefined ? { pause_message: data.pause_message } : {}),
+      ...(data.paused_until !== undefined ? { paused_until: data.paused_until } : {}),
+    });
   });
 
 export const partnerAnalyticsSummary = createServerFn({ method: "POST" })

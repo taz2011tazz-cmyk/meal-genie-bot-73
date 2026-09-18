@@ -75,7 +75,7 @@ export function VisualExplainer({ data }: { data: VisualExplanation }) {
       return { start, end: t };
     });
   }, [scenes]);
-  const totalMs = timeline.length ? timeline[timeline.length - 1].end : 0;
+  const totalMs = timeline.at(-1)?.end ?? 0;
 
   const draw = useCallback(
     (
@@ -87,6 +87,8 @@ export function VisualExplainer({ data }: { data: VisualExplanation }) {
       fade: number,
     ) => {
       const scene = scenes[sceneIdx];
+      const timing = timeline[sceneIdx];
+      if (!scene || !timing) return;
       ctx.fillStyle = "#0d0b09";
       ctx.fillRect(0, 0, w, h);
       const img = images[sceneIdx];
@@ -150,7 +152,7 @@ export function VisualExplainer({ data }: { data: VisualExplanation }) {
       });
 
       // Progress bar
-      const overall = (timeline[sceneIdx].start + progress * scene.durationMs) / (totalMs || 1);
+      const overall = (timing.start + progress * scene.durationMs) / (totalMs || 1);
       ctx.fillStyle = "rgba(255,255,255,0.25)";
       ctx.fillRect(pad, h - pad * 0.45, w - pad * 2, Math.max(3, h * 0.005));
       ctx.fillStyle = "#f0b400";
@@ -172,6 +174,7 @@ export function VisualExplainer({ data }: { data: VisualExplanation }) {
     const loop = () => {
       const elapsed = playing ? performance.now() - startRef.current : 0;
       const scene = timeline[index];
+      if (!scene) return;
       const local = playing ? Math.min(scene.end - scene.start, elapsed) : 0;
       const progress = local / (scene.end - scene.start);
       draw(ctx, w, h, index, progress, Math.min(1, local / 500 + 0.15));
@@ -232,7 +235,12 @@ export function VisualExplainer({ data }: { data: VisualExplanation }) {
     }
     setRecording(true);
     setPlaying(false);
-    const ctx = canvas.getContext("2d")!;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      setRecording(false);
+      toast.error("Video export isn't supported in this browser");
+      return;
+    }
     const { w, h } = DIMS[aspect];
     const stream = canvas.captureStream(30);
     const chunks: BlobPart[] = [];
@@ -250,8 +258,10 @@ export function VisualExplainer({ data }: { data: VisualExplanation }) {
         if (elapsed >= totalMs) return resolve();
         const i = timeline.findIndex((t) => elapsed >= t.start && elapsed < t.end);
         const idx = i === -1 ? scenes.length - 1 : i;
-        const local = elapsed - timeline[idx].start;
-        draw(ctx, w, h, idx, local / (timeline[idx].end - timeline[idx].start), Math.min(1, local / 400 + 0.15));
+        const timing = timeline[idx];
+        if (!timing) return resolve();
+        const local = elapsed - timing.start;
+        draw(ctx, w, h, idx, local / (timing.end - timing.start), Math.min(1, local / 400 + 0.15));
         requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);

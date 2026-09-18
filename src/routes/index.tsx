@@ -34,6 +34,16 @@ import { PlanStatusCard } from "@/components/plan-status-card";
 import { XpChip } from "@/components/xp-chip";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "MealMate — Cook the world, one recipe at a time" },
+      { name: "description", content: "Discover South African favourites and global recipes, then plan, shop, and cook with MealMate." },
+      { property: "og:title", content: "MealMate — Cook the world, one recipe at a time" },
+      { property: "og:description", content: "Discover South African favourites and global recipes, then plan, shop, and cook with MealMate." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(trendingRecipesQuery()),
   component: Index,

@@ -57,7 +57,7 @@ RULES:
 - Plain markdown only. No headings above H3.`;
 
 async function callChat(messages: { role: string; content: string }[]): Promise<string> {
-  const key = process.env.LOVABLE_API_KEY;
+  const key = process.env["LOVABLE_API_KEY"];
   if (!key) throw new Error("Missing LOVABLE_API_KEY");
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",

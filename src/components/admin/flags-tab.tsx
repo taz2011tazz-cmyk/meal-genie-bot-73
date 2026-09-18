@@ -54,7 +54,12 @@ export function FlagsTab() {
             disabled={!newKey || upsert.isPending}
             onClick={() => {
               upsert.mutate(
-                { key: newKey.trim(), enabled: false, description: newDesc.trim() || undefined, rollout_percent: 100 },
+                {
+                  key: newKey.trim(),
+                  enabled: false,
+                  rollout_percent: 100,
+                  ...(newDesc.trim() ? { description: newDesc.trim() } : {}),
+                },
                 {
                   onSuccess: () => {
                     setNewKey("");
@@ -85,8 +90,8 @@ export function FlagsTab() {
                     upsert.mutate({
                       key: f.key,
                       enabled: v,
-                      description: f.description ?? undefined,
                       rollout_percent: f.rollout_percent ?? 100,
+                      ...(f.description ? { description: f.description } : {}),
                     })
                   }
                 />

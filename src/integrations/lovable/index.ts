@@ -13,10 +13,10 @@ export const lovable = {
   auth: {
     signInWithOAuth: async (provider: "google" | "apple" | "microsoft" | "lovable", opts?: SignInOptions) => {
       const result = await lovableAuth.signInWithOAuth(provider, {
-        redirect_uri: opts?.redirect_uri,
         extraParams: {
           ...opts?.extraParams,
         },
+        ...(opts?.redirect_uri ? { redirect_uri: opts.redirect_uri } : {}),
       });
 
       if (result.redirected) {

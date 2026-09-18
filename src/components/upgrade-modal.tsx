@@ -47,7 +47,7 @@ export function UpgradeModalProvider({ children }: { children: ReactNode }) {
   return (
     <UpgradeCtx.Provider value={ctx}>
       {children}
-      {isOpen && <PaywallSheet reason={reason} onClose={() => setIsOpen(false)} />}
+      {isOpen && <PaywallSheet {...(reason ? { reason } : {})} onClose={() => setIsOpen(false)} />}
     </UpgradeCtx.Provider>
   );
 }

@@ -104,7 +104,7 @@ export const importRecipeFromUrl = createServerFn({ method: "POST" })
     z.object({ url: z.string().url().max(1000) }).parse(v),
   )
   .handler(async ({ data, context }) => {
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
     const meta = await scrapeMeta(data.url);
