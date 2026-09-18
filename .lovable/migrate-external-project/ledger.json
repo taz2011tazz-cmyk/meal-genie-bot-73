@@ -1,0 +1,20 @@
+{
+  "source": "github",
+  "source_url": "https://github.com/kok957118-oss/ai-meal-wizard-69.git",
+  "capabilities": [
+    {"capability":"application code and routes","source":"GitHub repository","outcome":"preserve","status":"in_progress","next_action":"copy and verify"},
+    {"capability":"visual design and assets","source":"GitHub repository and published site","outcome":"preserve","status":"in_progress","next_action":"copy and verify responsive views"},
+    {"capability":"database schema","source":"generated types plus four partial migrations","outcome":"recreate","status":"in_progress","next_action":"reconstruct missing foundational schema and apply supplied migrations"},
+    {"capability":"database records","source":"partial recipe and restaurant seed migrations","outcome":"preserve supplied records","status":"in_progress","next_action":"apply supplied seeds; request remaining production export"},
+    {"capability":"authentication identities","source":"existing hosted auth provider","outcome":"preserve","status":"blocked","next_action":"existing identity export or original backend connection required"},
+    {"capability":"authentication flows","source":"email, Google, Apple","outcome":"preserve","status":"in_progress","next_action":"verify sign-in UI and callbacks"},
+    {"capability":"authorization","source":"RLS and role helpers referenced by source","outcome":"recreate","status":"in_progress","next_action":"reconstruct policies"},
+    {"capability":"uploaded files","source":"asset pointer files","outcome":"preserve bundled assets","status":"in_progress","next_action":"copy pointers and verify rendering"},
+    {"capability":"AI features","source":"Lovable AI gateway","outcome":"preserve","status":"in_progress","next_action":"verify server functions"},
+    {"capability":"payments","source":"RevenueCat webhook","outcome":"preserve","status":"blocked","next_action":"configure webhook secret and endpoint after deployment"},
+    {"capability":"public endpoints and webhooks","source":"RevenueCat webhook","outcome":"preserve","status":"in_progress","next_action":"copy and verify signature handling"},
+    {"capability":"schedules","source":"none detected","outcome":"not_applicable","status":"verified","next_action":"none"},
+    {"capability":"cutover","source":"published app","outcome":"pending","status":"blocked","next_action":"publish and update external webhook URL after verification"},
+    {"capability":"verification","source":"preview","outcome":"pending","status":"in_progress","next_action":"build and browser-test key routes"}
+  ]
+}
