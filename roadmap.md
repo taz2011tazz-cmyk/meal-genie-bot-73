@@ -1,7 +1,6 @@
-# Migration roadmap
+# Roadmap
 
-- [ ] Copy the complete MealMate application and assets.
-- [ ] Recreate the database schema, access rules, and supplied demo records.
-- [ ] Preserve email, Google, and Apple sign-in flows with user profiles.
-- [ ] Verify the main mobile experience and key screens.
-- [ ] Request missing production records, existing identities, and RevenueCat secret.
+- [ ] Build the dark-first restaurant discovery home
+- [ ] Connect search, categories, filters, carousel, location, favorites, and cart
+- [ ] Align restaurant detail and restaurant navigation styling
+- [ ] Verify loading, empty, error, mobile, desktop, and order-entry behavior
