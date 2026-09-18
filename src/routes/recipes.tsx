@@ -34,9 +34,8 @@ export const Route = createFileRoute("/recipes")({
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),
-  validateSearch: (search: Record<string, unknown>): RecipeSearch => ({
-    c: typeof search.c === "string" ? search.c : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): RecipeSearch =>
+    typeof search["c"] === "string" ? { c: search["c"] } : {},
   loaderDeps: ({ search }) => ({ c: search.c }),
   loader: ({ context, deps }) =>
     context.queryClient.ensureQueryData(

@@ -56,8 +56,8 @@ function PlannerPage() {
       return d;
     });
   }, []);
-  const fromISO = iso(week[0]);
-  const toISO = iso(week[6]);
+  const fromISO = iso(week[0] ?? new Date());
+  const toISO = iso(week[6] ?? new Date());
 
   const { data: plans } = useQuery({
     ...myPlannerQuery(fromISO, toISO),
