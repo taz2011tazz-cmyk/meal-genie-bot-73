@@ -32,7 +32,7 @@ export const generatePersonalizedPlan = createServerFn({ method: "POST" })
       .eq("id", context.userId)
       .maybeSingle();
 
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
     const start = data.startDate ? new Date(data.startDate) : new Date();
@@ -80,7 +80,7 @@ Days: 1..${data.days}. One entry per meal per day.`;
       };
       const suggestions: MealSuggestion[] = (parsed.plan ?? []).map((p) => ({
         day: p.day,
-        date: dates[Math.max(0, Math.min(p.day - 1, dates.length - 1))],
+        date: dates[Math.max(0, Math.min(p.day - 1, dates.length - 1))] ?? dates[0] ?? "",
         meal_type: p.meal_type,
         name: p.name,
         calories: p.calories ?? 0,
@@ -168,7 +168,7 @@ export const aiPlanAndShop = createServerFn({ method: "POST" })
       .eq("id", userId)
       .maybeSingle();
 
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
     const start = data.startDate ? new Date(data.startDate) : new Date();
@@ -178,8 +178,8 @@ export const aiPlanAndShop = createServerFn({ method: "POST" })
       d.setDate(start.getDate() + i);
       dates.push(d.toISOString().slice(0, 10));
     }
-    const fromISO = dates[0];
-    const toISO = dates[dates.length - 1];
+    const fromISO = dates[0] ?? data.startDate ?? new Date().toISOString().slice(0, 10);
+    const toISO = dates.at(-1) ?? fromISO;
 
     const prompt = `Build a ${data.days}-day meal plan with meals: ${data.meals.join(", ")}.
 Profile:
@@ -247,7 +247,7 @@ Days: 1..${data.days}. One entry per meal per day.`;
 
     const planRows = suggestions.map((m) => ({
       user_id: userId,
-      plan_date: dates[Math.max(0, Math.min(m.day - 1, dates.length - 1))],
+      plan_date: dates[Math.max(0, Math.min(m.day - 1, dates.length - 1))] ?? fromISO,
       meal_type: m.meal_type,
       custom_name: m.name,
       recipe_id: null as string | null,
@@ -336,7 +336,7 @@ export const suggestSubstitutions = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await enforceRateLimit("ai_substitute", context.userId, 20);
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
     const t0 = Date.now();
     try {
