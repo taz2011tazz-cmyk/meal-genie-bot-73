@@ -177,16 +177,16 @@ function AdminPage() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
-          <OverviewTab analytics={analytics.data} loading={analytics.isLoading} />
+          <OverviewTab {...(analytics.data ? { analytics: analytics.data } : {})} loading={analytics.isLoading} />
         </TabsContent>
         <TabsContent value="users" className="mt-4">
-          <UsersTab analytics={analytics.data} loading={analytics.isLoading} />
+          <UsersTab {...(analytics.data ? { analytics: analytics.data } : {})} loading={analytics.isLoading} />
         </TabsContent>
         <TabsContent value="revenue" className="mt-4">
-          <RevenueTab analytics={analytics.data} loading={analytics.isLoading} />
+          <RevenueTab {...(analytics.data ? { analytics: analytics.data } : {})} loading={analytics.isLoading} />
         </TabsContent>
         <TabsContent value="recipes" className="mt-4">
-          <RecipesTab analytics={analytics.data} loading={analytics.isLoading} />
+          <RecipesTab {...(analytics.data ? { analytics: analytics.data } : {})} loading={analytics.isLoading} />
         </TabsContent>
         <TabsContent value="telemetry" className="mt-4">
           <TelemetryTab range={range} />

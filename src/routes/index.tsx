@@ -81,7 +81,7 @@ function Index() {
   const favoriteIds = new Set((favorites ?? []).map((f) => f.recipe_id));
 
   const firstName =
-    (user?.user_metadata?.full_name as string | undefined)?.split(" ")[0] ??
+    (user?.user_metadata?.["full_name"] as string | undefined)?.split(" ")[0] ??
     user?.email?.split("@")[0] ??
     "there";
 

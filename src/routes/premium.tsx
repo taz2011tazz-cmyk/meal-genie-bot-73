@@ -103,7 +103,10 @@ function PremiumPage() {
   }
 
   function startTrial() {
-    if (!user) return navigate({ to: "/auth" });
+    if (!user) {
+      void navigate({ to: "/auth" });
+      return;
+    }
     toast.info("Premium purchases open on the MealMate mobile app", {
       description:
         "Sign in with the same account on iOS or Android to start your 3-day trial.",

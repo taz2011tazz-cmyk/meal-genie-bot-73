@@ -175,7 +175,7 @@ export async function updateRestaurantProfile(userId: string, input: ProfileUpda
   await assertMember(userId, restaurantId);
 
   const patch: Record<string, unknown> = { ...rest };
-  if (opening_hours) patch.opening_hours = opening_hours;
+  if (opening_hours) patch["opening_hours"] = opening_hours;
   Object.keys(patch).forEach((k) => patch[k] === undefined && delete patch[k]);
 
   if (Object.keys(patch).length > 0) {
@@ -362,8 +362,8 @@ export async function setOrderStatus(
   }
 
   const patch: Record<string, unknown> = { status };
-  if (status === "completed") patch.completed_at = new Date().toISOString();
-  if (status === "cancelled") patch.rejection_reason = reason ?? null;
+  if (status === "completed") patch["completed_at"] = new Date().toISOString();
+  if (status === "cancelled") patch["rejection_reason"] = reason ?? null;
 
   const { error } = await supabaseAdmin
     .from("restaurant_orders")
@@ -457,6 +457,7 @@ export async function persistOrder(userId: string, input: OrderInput) {
   const { data: order, error } = await supabaseAdmin
     .from("restaurant_orders")
     .insert({
+      order_number: `MM-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().slice(0, 4).toUpperCase()}`,
       restaurant_id: restaurant.id,
       customer_id: userId,
       status: "new",

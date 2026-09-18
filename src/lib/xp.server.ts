@@ -270,6 +270,7 @@ export async function claimEliteRewardFor(userId: string) {
       user_id: userId,
       tier: "promo",
       status: "active",
+      store: "promo",
       is_manual: true,
       auto_renew: false,
       period_start: now.toISOString(),

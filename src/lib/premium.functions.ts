@@ -126,7 +126,14 @@ export async function enforceAndIncrement(
   await supabaseAdmin
     .from("usage_limits")
     .upsert(
-      { user_id: userId, feature_key: feature, period_key: pk, count: current + 1 },
+      {
+        user_id: userId,
+        feature,
+        feature_key: feature,
+        period_start: new Date().toISOString(),
+        period_key: pk,
+        count: current + 1,
+      },
       { onConflict: "user_id,feature_key,period_key" },
     );
   return { allowed: true, remaining: cfg.max - current - 1, premium: false };
@@ -505,6 +512,7 @@ export const adminRevokePremium = createServerFn({ method: "POST" })
       event_type: "admin:revoke",
       source: "admin",
       actor_id: context.userId,
+      payload: {},
     });
     return { ok: true };
   });
