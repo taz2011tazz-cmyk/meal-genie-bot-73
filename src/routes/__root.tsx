@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { AppHeader } from "@/components/app-header";
 import { BottomNav } from "@/components/bottom-nav";
+import { MarketplaceBottomNav } from "@/components/restaurant/marketplace-bottom-nav";
 
 import { AuthGate } from "@/components/auth-gate";
 import { Toaster } from "@/components/ui/sonner";
@@ -158,7 +159,9 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const showAppHeader = pathname !== "/";
+  const isMarketplace =
+    pathname === "/restaurants" || pathname.startsWith("/restaurant/");
+  const showAppHeader = pathname !== "/" && !isMarketplace;
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
@@ -175,14 +178,16 @@ function RootComponent() {
       <ThemeProvider>
         <LocaleProvider>
           <UpgradeModalProvider>
-            <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col bg-background pb-20">
+            <div
+              className={`mx-auto flex min-h-screen w-full max-w-3xl flex-col bg-background pb-20 ${isMarketplace ? "marketplace-dark" : ""}`}
+            >
               {showAppHeader && <AppHeader />}
               <AuthGate>
                 <div key={pathname} className="page-enter flex flex-1 flex-col">
                   <Outlet />
                 </div>
               </AuthGate>
-              <BottomNav />
+              {isMarketplace ? <MarketplaceBottomNav /> : <BottomNav />}
             </div>
             <Toaster position="top-center" />
           </UpgradeModalProvider>
