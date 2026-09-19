@@ -189,11 +189,12 @@ export function useFavouriteRestaurants() {
 export const DISCOVERY_CATEGORIES = [
   { key: "deals", label: "Hot Deals", emoji: "🔥", terms: [] as string[] },
   { key: "pizza", label: "Pizza", emoji: "🍕", terms: ["pizza"] },
+  { key: "fastfood", label: "Fast Food", emoji: "🍟", terms: ["fast", "fries", "kota", "takeaway"] },
   { key: "burgers", label: "Burgers", emoji: "🍔", terms: ["burger", "smash"] },
   { key: "chicken", label: "Chicken", emoji: "🍗", terms: ["chicken", "wings", "poultry"] },
-  { key: "fastfood", label: "Fast Food", emoji: "🍟", terms: ["fast", "fries", "kota", "takeaway"] },
-  { key: "healthy", label: "Healthy", emoji: "🥗", terms: ["healthy", "salad", "bowl", "vegan", "vegetarian"] },
   { key: "mexican", label: "Mexican", emoji: "🌮", terms: ["mexican", "taco", "burrito", "nacho"] },
+  { key: "sushi", label: "Sushi", emoji: "🍣", terms: ["sushi", "maki", "sashimi", "japanese"] },
+  { key: "healthy", label: "Healthy", emoji: "🥗", terms: ["healthy", "salad", "bowl", "vegan", "vegetarian"] },
   { key: "desserts", label: "Desserts", emoji: "🍰", terms: ["dessert", "cake", "sweet", "ice cream", "pudding"] },
   { key: "drinks", label: "Drinks", emoji: "🥤", terms: ["drink", "juice", "coffee", "smoothie", "soda"] },
 ] as const;
