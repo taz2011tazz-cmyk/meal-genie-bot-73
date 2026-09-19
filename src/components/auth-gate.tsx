@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 // Routes accessible without being signed in.
-const PUBLIC_PREFIXES = ["/auth", "/legal", "/about", "/support"];
+const PUBLIC_PREFIXES = ["/auth", "/legal", "/about", "/support", "/restaurants", "/restaurant"];
 
 // Inactive sessions are signed out after this window.
 const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
