@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_placements: {
+        Row: {
+          advertiser: string | null
+          body: string | null
+          created_at: string
+          cta_label: string | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          slot: string
+          starts_at: string | null
+          target_url: string | null
+          title: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          advertiser?: string | null
+          body?: string | null
+          created_at?: string
+          cta_label?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          slot: string
+          starts_at?: string | null
+          target_url?: string | null
+          title: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          advertiser?: string | null
+          body?: string | null
+          created_at?: string
+          cta_label?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          slot?: string
+          starts_at?: string | null
+          target_url?: string | null
+          title?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
           body: string
@@ -822,7 +873,9 @@ export type Database = {
           height_cm: number | null
           id: string
           locale: string
+          onboarding_completed: boolean
           post_count: number
+          preferences: Json
           updated_at: string
           username: string | null
           weight_kg: number | null
@@ -846,7 +899,9 @@ export type Database = {
           height_cm?: number | null
           id: string
           locale?: string
+          onboarding_completed?: boolean
           post_count?: number
+          preferences?: Json
           updated_at?: string
           username?: string | null
           weight_kg?: number | null
@@ -870,7 +925,9 @@ export type Database = {
           height_cm?: number | null
           id?: string
           locale?: string
+          onboarding_completed?: boolean
           post_count?: number
+          preferences?: Json
           updated_at?: string
           username?: string | null
           weight_kg?: number | null
