@@ -6,8 +6,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-// Routes accessible without being signed in.
-const PUBLIC_PREFIXES = ["/auth", "/legal", "/about", "/support", "/restaurants", "/restaurant"];
+// MealMate is explorable without an account. Only routes that read or write
+// personal account data require a signed-in, verified user.
+const ACCOUNT_PREFIXES = [
+  "/profile",
+  "/orders",
+  "/order",
+  "/checkout",
+  "/cookbook",
+  "/admin",
+  "/partner",
+  "/premium",
+];
 
 // Inactive sessions are signed out after this window.
 const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
