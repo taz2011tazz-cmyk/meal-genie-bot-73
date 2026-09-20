@@ -19,6 +19,7 @@ import { Route as CoachRouteImport } from './routes/coach'
 import { Route as CookbookRouteImport } from './routes/cookbook'
 import { Route as GroceryRouteImport } from './routes/grocery'
 import { Route as ListRouteImport } from './routes/list'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as PartnerRouteImport } from './routes/partner'
 import { Route as PlannerRouteImport } from './routes/planner'
@@ -86,6 +87,11 @@ const GroceryRoute = GroceryRouteImport.update({
 const ListRoute = ListRouteImport.update({
   id: '/list',
   path: '/list',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrdersRoute = OrdersRouteImport.update({
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/cookbook': typeof CookbookRoute
   '/grocery': typeof GroceryRoute
   '/list': typeof ListRoute
+  '/onboarding': typeof OnboardingRoute
   '/orders': typeof OrdersRoute
   '/partner': typeof PartnerRouteWithChildren
   '/planner': typeof PlannerRoute
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/cookbook': typeof CookbookRoute
   '/grocery': typeof GroceryRoute
   '/list': typeof ListRoute
+  '/onboarding': typeof OnboardingRoute
   '/orders': typeof OrdersRoute
   '/partner': typeof PartnerRouteWithChildren
   '/planner': typeof PlannerRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   '/cookbook': typeof CookbookRoute
   '/grocery': typeof GroceryRoute
   '/list': typeof ListRoute
+  '/onboarding': typeof OnboardingRoute
   '/orders': typeof OrdersRoute
   '/partner': typeof PartnerRouteWithChildren
   '/planner': typeof PlannerRoute
@@ -284,6 +293,7 @@ export interface FileRouteTypes {
     | '/cookbook'
     | '/grocery'
     | '/list'
+    | '/onboarding'
     | '/orders'
     | '/partner'
     | '/planner'
@@ -314,6 +324,7 @@ export interface FileRouteTypes {
     | '/cookbook'
     | '/grocery'
     | '/list'
+    | '/onboarding'
     | '/orders'
     | '/partner'
     | '/planner'
@@ -344,6 +355,7 @@ export interface FileRouteTypes {
     | '/cookbook'
     | '/grocery'
     | '/list'
+    | '/onboarding'
     | '/orders'
     | '/partner'
     | '/planner'
@@ -375,6 +387,7 @@ export interface RootRouteChildren {
   CookbookRoute: typeof CookbookRoute
   GroceryRoute: typeof GroceryRoute
   ListRoute: typeof ListRoute
+  OnboardingRoute: typeof OnboardingRoute
   OrdersRoute: typeof OrdersRoute
   PartnerRoute: typeof PartnerRouteWithChildren
   PlannerRoute: typeof PlannerRoute
@@ -464,6 +477,13 @@ declare module '@tanstack/react-router' {
       path: '/list'
       fullPath: '/list'
       preLoaderRoute: typeof ListRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/orders': {
@@ -617,6 +637,7 @@ const rootRouteChildren: RootRouteChildren = {
   CookbookRoute: CookbookRoute,
   GroceryRoute: GroceryRoute,
   ListRoute: ListRoute,
+  OnboardingRoute: OnboardingRoute,
   OrdersRoute: OrdersRoute,
   PartnerRoute: PartnerRouteWithChildren,
   PlannerRoute: PlannerRoute,
