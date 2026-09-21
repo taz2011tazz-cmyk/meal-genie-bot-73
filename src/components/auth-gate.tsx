@@ -55,7 +55,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     };
   }, [user, navigate]);
 
-  if (isPublic) return <>{children}</>;
+  if (!needsAccount) return <>{children}</>;
 
   if (loading) {
     return (
