@@ -257,7 +257,7 @@ function PremiumCard({
     "Advanced Nutrition Analysis",
     "Barcode Scanner",
     "Unlimited Grocery Lists",
-    "No Ads",
+    "Completely ad-free — no banners or sponsored cards",
     "Priority AI Processing",
     "Early Access to New Features",
   ];

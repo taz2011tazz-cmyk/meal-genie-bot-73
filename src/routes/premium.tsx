@@ -325,7 +325,7 @@ function FreeCard({ onSelect }: { onSelect: () => void }) {
     "Grocery List",
     "Basic Nutrition",
     "Limited AI Chat",
-    "Ads",
+    "Tasteful sponsored cards in your feed",
   ];
   return (
     <article className="rounded-[28px] border border-border bg-card p-5 shadow-sm">
@@ -371,7 +371,7 @@ function PremiumHeroCard({
     "Barcode Scanner",
     "Personalized Meal Plans",
     "Unlimited Grocery Lists",
-    "No Ads",
+    "Completely ad-free — no banners or sponsored cards",
     "Priority AI Processing",
     "Early Access to New Features",
   ];
