@@ -32,6 +32,9 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PlanStatusCard } from "@/components/plan-status-card";
 import { XpChip } from "@/components/xp-chip";
+import { AdSlot } from "@/components/ad-slot";
+import { usePreferences } from "@/hooks/use-preferences";
+import { personalize } from "@/lib/preferences";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -71,8 +74,15 @@ function Index() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useSession();
-  const { data: trending } = useSuspenseQuery(trendingRecipesQuery());
-  const { data: southAfrican } = useQuery(southAfricanFavoritesQuery());
+  const { preferences, hasPreferences } = usePreferences();
+  const { data: trendingRaw } = useSuspenseQuery(trendingRecipesQuery());
+  const { data: southAfricanRaw } = useQuery(southAfricanFavoritesQuery());
+  const recipeText = (r: { name: string; description?: string | null; cuisine?: string | null; category?: string | null; diet_tags?: string[] | null }) =>
+    [r.name, r.description ?? null, r.cuisine ?? null, r.category ?? null, r.diet_tags ?? []];
+  const trending = personalize(hasPreferences ? preferences : null, trendingRaw ?? [], recipeText);
+  const southAfrican = southAfricanRaw
+    ? personalize(hasPreferences ? preferences : null, southAfricanRaw, recipeText)
+    : southAfricanRaw;
   const { data: favorites } = useQuery({ ...myFavoritesQuery(), enabled: !!user });
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState<null | "search" | "surprise">(null);
