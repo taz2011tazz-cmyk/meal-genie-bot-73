@@ -22,6 +22,9 @@ import {
 } from "@/lib/marketplace.queries";
 import { RECIPE_PHOTOS } from "@/assets/recipes/manifest";
 import { cn } from "@/lib/utils";
+import { AdSlot } from "@/components/ad-slot";
+import { usePreferences } from "@/hooks/use-preferences";
+import { personalize } from "@/lib/preferences";
 
 export const Route = createFileRoute("/restaurants")({
   head: () => ({
