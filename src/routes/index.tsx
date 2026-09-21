@@ -293,6 +293,11 @@ function Index() {
         <PlanStatusCard />
       </section>
 
+      {/* Sponsored (free plan only) */}
+      <section className="px-4 pt-6">
+        <AdSlot slot="home_feed" />
+      </section>
+
       {/* Trending recipes */}
       <section className="pt-8">
         <div className="mb-3 flex items-end justify-between px-4">
