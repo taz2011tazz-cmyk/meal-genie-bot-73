@@ -243,6 +243,12 @@ function SettingsPage() {
 
   const profileItems: Item[] = [
     {
+      label: "Edit my preferences",
+      description: "Goals, tastes, allergies, time and budget",
+      icon: UserCog,
+      to: "/onboarding",
+    },
+    {
       label: "MealMate Premium",
       description: "Unlimited AI, recipes, meal plans · 3-day free trial",
       icon: Star,
