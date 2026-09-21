@@ -68,6 +68,7 @@ function RestaurantsPage() {
   const { data, isLoading, isError, refetch, isFetching } = useQuery(marketplaceFeedQuery());
   const { coords, state: geoState, request: requestLocation, clear: clearLocation } = useUserLocation();
   const { cart, addItem, setQuantity, count, subtotal } = useCart();
+  const { preferences, hasPreferences } = usePreferences();
   const { isFavourite, toggle } = useFavouriteRestaurants();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<CategoryKey | null>(null);
