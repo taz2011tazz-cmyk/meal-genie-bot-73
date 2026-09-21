@@ -22,6 +22,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LocaleProvider } from "@/components/locale-provider";
 import { UpgradeModalProvider } from "@/components/upgrade-modal";
+import { shouldOfferOnboarding } from "@/lib/preferences";
 
 function NotFoundComponent() {
   return (
@@ -162,6 +163,14 @@ function RootComponent() {
   const isMarketplace =
     pathname === "/restaurants" || pathname.startsWith("/restaurant/");
   const showAppHeader = pathname !== "/" && !isMarketplace;
+
+  // First open on this device: offer the personalized setup once.
+  useEffect(() => {
+    if (pathname !== "/") return;
+    if (shouldOfferOnboarding()) {
+      void router.navigate({ to: "/onboarding", replace: true });
+    }
+  }, [pathname, router]);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
