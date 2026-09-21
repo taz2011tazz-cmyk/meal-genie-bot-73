@@ -6,18 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-// MealMate is explorable without an account. Only routes that read or write
-// personal account data require a signed-in, verified user.
-const ACCOUNT_PREFIXES = [
-  "/profile",
-  "/orders",
-  "/order",
-  "/checkout",
-  "/cookbook",
-  "/admin",
-  "/partner",
-  "/premium",
-];
+// MealMate requires an account: onboarding first, then sign-up, then the app.
+// Only these routes are reachable without a signed-in, verified user.
+const PUBLIC_PREFIXES = ["/auth", "/onboarding", "/reset-password"];
 
 // Inactive sessions are signed out after this window.
 const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
@@ -27,9 +18,10 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const { user, loading } = useSession();
   const navigate = useNavigate();
 
-  const needsAccount = ACCOUNT_PREFIXES.some(
+  const isPublic = PUBLIC_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(p + "/"),
   );
+  const needsAccount = !isPublic;
 
   // Inactivity timeout: sign out after N minutes of no interaction.
   useEffect(() => {
