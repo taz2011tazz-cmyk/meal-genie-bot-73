@@ -27,7 +27,9 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const { user, loading } = useSession();
   const navigate = useNavigate();
 
-  const isPublic = PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  const needsAccount = ACCOUNT_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + "/"),
+  );
 
   // Inactivity timeout: sign out after N minutes of no interaction.
   useEffect(() => {
