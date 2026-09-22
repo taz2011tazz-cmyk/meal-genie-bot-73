@@ -78,20 +78,13 @@ function SignInPrompt() {
         <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
           <ChefHat className="h-6 w-6" />
         </span>
-        <h1 className="mt-4 font-display text-2xl">This part needs an account</h1>
+        <h1 className="mt-4 font-display text-2xl">Sign in to continue</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Create a free account to save your orders, cookbook and preferences. You can keep
-          exploring MealMate without one.
+          Create your free MealMate account to unlock your personalised recipes, meal plans
+          and restaurant picks.
         </p>
         <Button className="mt-6 w-full" onClick={() => navigate({ to: "/auth" })}>
           Create account or sign in
-        </Button>
-        <Button
-          variant="ghost"
-          className="mt-2 w-full"
-          onClick={() => navigate({ to: "/", replace: true })}
-        >
-          Keep exploring
         </Button>
       </div>
     </main>

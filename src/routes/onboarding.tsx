@@ -189,7 +189,7 @@ function OnboardingPage() {
 
   function skipSetup() {
     markOnboardingSeen();
-    navigate({ to: "/", replace: true });
+    navigate({ to: "/auth", replace: true });
   }
 
   if (done) {
@@ -454,9 +454,9 @@ function ReadyScreen({ onRestart }: { onRestart: () => void }) {
         <div className="mt-6 space-y-2">
           <Button
             className="h-12 w-full rounded-2xl text-base font-semibold"
-            onClick={() => navigate({ to: "/", replace: true })}
+            onClick={() => navigate({ to: "/auth", replace: true })}
           >
-            <Sparkles className="mr-2 h-4 w-4" /> Start exploring
+            <Sparkles className="mr-2 h-4 w-4" /> Create my account
           </Button>
           <Button variant="outline" className="h-12 w-full rounded-2xl" onClick={onRestart}>
             Edit my preferences
