@@ -1,4 +1,4 @@
-import { recipeImageUrl, imageFallback, IMAGE_DIMENSIONS } from "@/lib/recipe-image";
+import { RecipeImage } from "@/components/recipe-image";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
@@ -360,16 +360,8 @@ function Index() {
                 className="w-24 flex-shrink-0 text-center"
               >
                 <div className="aspect-square w-24 overflow-hidden rounded-2xl bg-muted">
-                  <img
-                    src={recipeImageUrl(r, "thumb")}
-                    alt={r.name}
-                    width={IMAGE_DIMENSIONS.thumb.width}
-                    height={IMAGE_DIMENSIONS.thumb.height}
-                    loading="lazy"
-                    decoding="async"
-                    onError={imageFallback(r, "thumb")}
-                    className="h-full w-full object-cover"
-                  />
+                  <RecipeImage recipe={r} size="thumb" className="h-full w-full object-cover" />
+
                 </div>
                 <p className="mt-1.5 line-clamp-2 text-xs font-medium leading-tight">{r.name}</p>
               </Link>
@@ -407,16 +399,12 @@ function Index() {
             className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3"
           >
             <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-xl bg-muted">
-              <img
-                src={recipeImageUrl(continueCooking, "thumb")}
-                alt={continueCooking.name}
-                width={IMAGE_DIMENSIONS.thumb.width}
-                height={IMAGE_DIMENSIONS.thumb.height}
-                loading="lazy"
-                decoding="async"
-                onError={imageFallback(continueCooking, "thumb")}
+              <RecipeImage
+                recipe={continueCooking}
+                size="thumb"
                 className="h-full w-full object-cover"
               />
+
             </div>
             <div className="flex-1">
               <p className="font-display text-lg leading-tight">{continueCooking.name}</p>
