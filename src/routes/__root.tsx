@@ -23,6 +23,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { LocaleProvider } from "@/components/locale-provider";
 import { UpgradeModalProvider } from "@/components/upgrade-modal";
 import { shouldOfferOnboarding } from "@/lib/preferences";
+import { useSession } from "@/hooks/use-session";
 
 function NotFoundComponent() {
   return (
@@ -160,17 +161,19 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { user } = useSession();
   const isMarketplace =
     pathname === "/restaurants" || pathname.startsWith("/restaurant/");
   const showAppHeader = pathname !== "/" && !isMarketplace;
 
-  // First open on this device: offer the personalized setup once.
+  // First open: the 8-question setup comes before sign-up. Signed-in users
+  // who already finished onboarding go straight to the app.
   useEffect(() => {
-    if (pathname !== "/") return;
+    if (pathname !== "/" || user) return;
     if (shouldOfferOnboarding()) {
       void router.navigate({ to: "/onboarding", replace: true });
     }
-  }, [pathname, router]);
+  }, [pathname, router, user]);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
