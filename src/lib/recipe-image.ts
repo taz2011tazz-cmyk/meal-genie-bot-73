@@ -117,12 +117,42 @@ export function recipeImageUrl(r: ImageRecipeLike, size: ImageSize = "card"): st
   }
 }
 
-/** onError handler: fall back to the dish-matched generated photo, never a generic one. */
+/**
+ * Real, CDN-hosted photos used as a guaranteed last resort so a recipe card
+ * never renders an empty/broken image while a generated photo is unavailable.
+ */
+import dinnerFb from "@/assets/recipes/fallback/dinner.jpg.asset.json";
+import lunchFb from "@/assets/recipes/fallback/lunch.jpg.asset.json";
+import breakfastFb from "@/assets/recipes/fallback/breakfast.jpg.asset.json";
+import dessertFb from "@/assets/recipes/fallback/dessert.jpg.asset.json";
+import snackFb from "@/assets/recipes/fallback/snack.jpg.asset.json";
+import vegFb from "@/assets/recipes/fallback/veg.jpg.asset.json";
+
+export function categoryFallbackUrl(r: ImageRecipeLike): string {
+  const hay = `${r.name} ${r.category ?? ""} ${r.cuisine ?? ""}`.toLowerCase();
+  if (/dessert|pudding|cake|pie|tart|brownie|cookie|ice cream/.test(hay)) return dessertFb.url;
+  if (/breakfast|pancake|waffle|omelette|egg|porridge|oats|french toast/.test(hay))
+    return breakfastFb.url;
+  if (/snack|bread|muffin|baking|scone|biscuit|smoothie/.test(hay)) return snackFb.url;
+  if (/vegan|vegetarian|salad|bowl|veggie|tofu|plant/.test(hay)) return vegFb.url;
+  if (/lunch|sandwich|wrap|burger|kota|bunny chow|toastie/.test(hay)) return lunchFb.url;
+  return dinnerFb.url;
+}
+
+/** onError handler: fall back to the dish-matched photo, then a real category photo. */
 export function imageFallback(r: ImageRecipeLike, size: ImageSize = "card") {
   return (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
-    if (img.dataset["fallback"] === "1") return;
-    img.dataset["fallback"] = "1";
-    img.src = curatedRecipeImageUrl(r, size) ?? generatedImageUrl(r, size);
+    const step = img.dataset["fallback"] ?? "0";
+    if (step === "0") {
+      img.dataset["fallback"] = "1";
+      img.src = curatedRecipeImageUrl(r, size) ?? generatedImageUrl(r, size);
+      return;
+    }
+    if (step === "1") {
+      img.dataset["fallback"] = "2";
+      img.src = categoryFallbackUrl(r);
+    }
   };
 }
+
