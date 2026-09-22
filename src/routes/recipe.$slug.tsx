@@ -25,7 +25,7 @@ import { setContinueCooking } from "@/lib/continue-cooking";
 const CookingMode = lazy(() =>
   import("@/components/cooking-mode").then((m) => ({ default: m.CookingMode })),
 );
-import { recipeImageUrl, imageFallback, IMAGE_DIMENSIONS } from "@/lib/recipe-image";
+import { RecipeImage } from "@/components/recipe-image";
 import { awardXp } from "@/lib/xp.functions";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 import { Button } from "@/components/ui/button";
@@ -183,16 +183,13 @@ function RecipePage() {
 
         <div className="mt-4 grid gap-8 md:grid-cols-2">
           <div className="overflow-hidden rounded-3xl bg-muted">
-            <img
-              src={recipeImageUrl(r, "hero")}
-              alt={r.name}
-              width={IMAGE_DIMENSIONS.hero.width}
-              height={IMAGE_DIMENSIONS.hero.height}
-              decoding="async"
-              fetchPriority="high"
-              onError={imageFallback(r, "hero")}
+            <RecipeImage
+              recipe={r}
+              size="hero"
+              priority
               className="aspect-square w-full object-cover"
             />
+
           </div>
 
           <div className="flex flex-col">
