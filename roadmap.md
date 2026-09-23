@@ -10,3 +10,5 @@
 - [x] "Edit my preferences" entry in profile settings
 - [x] Remotely managed sponsored placements, hidden for Premium members
 - [x] Personalized ordering of home recipes and restaurant recommendations
+- [x] Ensure every recipe dish always displays a real image
+- [x] Confirm the project backend is enabled and connected
