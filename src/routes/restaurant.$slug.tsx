@@ -8,6 +8,7 @@ import {
   restaurantMenuQuery,
   restaurantReviewsQuery,
 } from "@/lib/restaurant-queries";
+import { useRestaurantRealtime } from "@/lib/marketplace.realtime";
 import { useCart } from "@/lib/cart";
 import { money, OpenBadge } from "@/components/restaurant/bits";
 import { formatDistance, haversineKm, useUserLocation } from "@/lib/geo";
@@ -56,6 +57,7 @@ function RestaurantPage() {
   const { data: restaurant, isLoading } = useQuery(restaurantBySlugQuery(slug));
   const { data: menu } = useQuery(restaurantMenuQuery(restaurant?.id));
   const { data: reviews } = useQuery(restaurantReviewsQuery(restaurant?.id));
+  useRestaurantRealtime(restaurant?.id, slug);
   const { cart, addItem, setQuantity, subtotal, count } = useCart();
   const { coords } = useUserLocation();
 

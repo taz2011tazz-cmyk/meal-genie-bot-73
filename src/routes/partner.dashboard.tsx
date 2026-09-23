@@ -16,6 +16,7 @@ import {
 import { NEXT_STATUS, ORDER_STATUS_LABEL, type OrderStatus } from "@/lib/restaurants.schemas";
 import { money } from "@/components/restaurant/bits";
 import { useSession } from "@/hooks/use-session";
+import { usePartnerOrdersRealtime, useRestaurantRealtime } from "@/lib/marketplace.realtime";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -268,6 +269,8 @@ function OrdersPanel({ restaurantId, currency }: { restaurantId: string; currenc
   const listOrders = useServerFn(listRestaurantOrders);
   const setStatus = useServerFn(updateOrderStatus);
   const [scope, setScope] = useState<"active" | "completed">("active");
+
+  usePartnerOrdersRealtime(restaurantId);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["partner", "orders", restaurantId, scope],

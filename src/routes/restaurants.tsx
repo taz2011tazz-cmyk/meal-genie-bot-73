@@ -13,6 +13,7 @@ import {
   Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet";
 import { money } from "@/components/restaurant/bits";
+import { useMarketplaceRealtime } from "@/lib/marketplace.realtime";
 import { useCart } from "@/lib/cart";
 import { formatDistance, haversineKm, isOpenNow, useUserLocation } from "@/lib/geo";
 import {
