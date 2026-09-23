@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useOrderRealtime } from "@/lib/marketplace.realtime";
 import { money, StatusTracker } from "@/components/restaurant/bits";
 import { type OrderStatus } from "@/lib/restaurants.schemas";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/order/$id")({
 
 function OrderPage() {
   const { id } = Route.useParams();
+  useOrderRealtime(id);
   const { data, isLoading } = useQuery({
     queryKey: ["order", id],
     refetchInterval: 15000,

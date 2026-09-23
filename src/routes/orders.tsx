@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/use-session";
+import { useMyOrdersRealtime } from "@/lib/marketplace.realtime";
 import { money } from "@/components/restaurant/bits";
 import { ORDER_STATUS_LABEL, type OrderStatus } from "@/lib/restaurants.schemas";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/orders")({
 
 function OrdersPage() {
   const { user } = useSession();
+  useMyOrdersRealtime(user?.id);
   const { data, isLoading } = useQuery({
     queryKey: ["my-orders", user?.id],
     enabled: !!user,

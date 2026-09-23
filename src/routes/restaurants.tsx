@@ -13,6 +13,7 @@ import {
   Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet";
 import { money } from "@/components/restaurant/bits";
+import { useMarketplaceRealtime } from "@/lib/marketplace.realtime";
 import { useCart } from "@/lib/cart";
 import { formatDistance, haversineKm, isOpenNow, useUserLocation } from "@/lib/geo";
 import {
@@ -66,6 +67,7 @@ function sectionTitle(title: string, subtitle?: string) {
 function RestaurantsPage() {
   const navigate = useNavigate();
   const { data, isLoading, isError, refetch, isFetching } = useQuery(marketplaceFeedQuery());
+  useMarketplaceRealtime();
   const { coords, state: geoState, request: requestLocation, clear: clearLocation } = useUserLocation();
   const { cart, addItem, setQuantity, count, subtotal } = useCart();
   const { preferences, hasPreferences } = usePreferences();
