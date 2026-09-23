@@ -133,8 +133,8 @@ export function usePartnerOrdersRealtime(restaurantId: string | undefined, onNew
           filter: `restaurant_id=eq.${restaurantId}`,
         },
         (payload) => {
-          queryClient.invalidateQueries({ queryKey: ["partner-orders", restaurantId] });
-          queryClient.invalidateQueries({ queryKey: ["partner-stats", restaurantId] });
+          queryClient.invalidateQueries({ queryKey: ["partner", "orders", restaurantId] });
+          queryClient.invalidateQueries({ queryKey: ["partner", "stats", restaurantId] });
           if (payload.eventType === "INSERT" && onNewOrder) onNewOrder();
         },
       )
@@ -145,4 +145,33 @@ export function usePartnerOrdersRealtime(restaurantId: string | undefined, onNew
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restaurantId, queryClient]);
+}
+
+/** Live status updates across all of one customer's orders. */
+export function useMyOrdersRealtime(userId: string | undefined) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel(`my-orders-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "restaurant_orders",
+          filter: `customer_id=eq.${userId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["my-orders"] });
+          queryClient.invalidateQueries({ queryKey: ["my-restaurant-orders"] });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, queryClient]);
 }
