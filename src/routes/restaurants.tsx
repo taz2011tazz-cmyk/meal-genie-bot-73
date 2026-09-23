@@ -66,6 +66,7 @@ function sectionTitle(title: string, subtitle?: string) {
 function RestaurantsPage() {
   const navigate = useNavigate();
   const { data, isLoading, isError, refetch, isFetching } = useQuery(marketplaceFeedQuery());
+  useMarketplaceRealtime();
   const { coords, state: geoState, request: requestLocation, clear: clearLocation } = useUserLocation();
   const { cart, addItem, setQuantity, count, subtotal } = useCart();
   const { preferences, hasPreferences } = usePreferences();
