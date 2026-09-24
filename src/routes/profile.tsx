@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/use-session";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { useTheme } from "@/components/theme-provider";
 import { GamificationCard } from "@/components/gamification-card";
 import {
   Select,
@@ -102,25 +103,7 @@ function SettingsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Theme
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    const stored = window.localStorage.getItem("mealmate-theme");
-    const initial =
-      stored === "dark" || stored === "light"
-        ? stored
-        : window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
-    setTheme(initial);
-    setMounted(true);
-  }, []);
-  useEffect(() => {
-    if (!mounted) return;
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    window.localStorage.setItem("mealmate-theme", theme);
-  }, [theme, mounted]);
+  const { resolved, setMode } = useTheme();
 
   // Notifications (local pref)
   const [notif, setNotif] = useState(true);
@@ -333,18 +316,14 @@ function SettingsPage() {
         title="Appearance"
         items={[
           {
-            label: "Dark mode",
-            description: mounted
-              ? theme === "dark"
-                ? "Easier on your eyes at night"
-                : "Bright and airy interface"
-              : " ",
-            icon: theme === "dark" ? Moon : Sun,
-            onClick: () => setTheme((t) => (t === "dark" ? "light" : "dark")),
+            label: resolved === "dark" ? "Dark mode" : "Light mode",
+            description: resolved === "dark" ? "Easier on your eyes at night" : "Bright and airy interface",
+            icon: resolved === "dark" ? Moon : Sun,
+            onClick: () => setMode(resolved === "dark" ? "light" : "dark"),
             trailing: (
               <Switch
-                checked={theme === "dark"}
-                onCheckedChange={(v) => setTheme(v ? "dark" : "light")}
+                checked={resolved === "dark"}
+                onCheckedChange={(v) => setMode(v ? "dark" : "light")}
                 aria-label="Dark mode"
               />
             ),

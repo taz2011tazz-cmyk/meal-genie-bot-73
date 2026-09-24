@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Check, Plus, Sparkles, X } from "lucide-react";
 import { Mascot } from "@/components/mascot";
+import { MealMateLogo } from "@/components/mealmate-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePreferences } from "@/hooks/use-preferences";
@@ -253,6 +254,7 @@ function OnboardingPage() {
         </div>
 
         <div className="mt-4 flex h-[52px] shrink-0 items-center gap-3">
+          <MealMateLogo imageClassName="size-10" className="shrink-0" />
           <div className="h-[52px] w-[52px] shrink-0">
             <Mascot size={52} mood="happy" />
           </div>

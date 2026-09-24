@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ChefHat, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { MealMateLogo } from "@/components/mealmate-logo";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -90,9 +91,7 @@ function AuthPage() {
     <main className="flex flex-1 items-center justify-center px-4 py-16">
       <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-sm">
         <div className="flex flex-col items-center text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-            <ChefHat className="h-6 w-6" />
-          </span>
+          <MealMateLogo imageClassName="size-14" className="flex-col gap-2" />
           <h1 className="mt-4 font-display text-3xl">
             {mode === "signin" ? "Welcome back" : "Join MealMate"}
           </h1>

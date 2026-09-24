@@ -69,25 +69,23 @@
   --ink: oklch(0.3 0.055 152);
   --ember: oklch(0.72 0.16 55);
   --leaf: oklch(0.61 0.16 139);
-  --background: oklch(0.982 0.012 115);
-  --foreground: oklch(0.3 0.055 152);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.3 0.055 152);
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.12 0 0);
+  --card: oklch(0.975 0 0);
+  --card-foreground: oklch(0.12 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.3 0.055 152);
-  --primary: oklch(0.61 0.16 139);
-  --primary-foreground: oklch(0.99 0.004 120);
-  --secondary: oklch(0.94 0.03 132);
-  --secondary-foreground: oklch(0.34 0.07 152);
-  --muted: oklch(0.955 0.02 128);
-  --muted-foreground: oklch(0.5 0.035 150);
-  --accent: oklch(0.94 0.05 68);
-  --accent-foreground: oklch(0.45 0.11 55);
-  --destructive: oklch(0.55 0.22 27);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.91 0.025 128);
-  --input: oklch(0.91 0.025 128);
-  --ring: oklch(0.61 0.16 139);
+  --popover-foreground: oklch(0.12 0 0);
+  --primary: oklch(0.12 0 0);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.94 0 0);
+  --secondary-foreground: oklch(0.12 0 0);
+  --muted: oklch(0.94 0 0);
+  --muted-foreground: oklch(0.42 0 0);
+  --accent: oklch(0.92 0 0);
+  --accent-foreground: oklch(0.12 0 0);
+  --border: oklch(0.82 0 0);
+  --input: oklch(0.82 0 0);
+  --ring: oklch(0.25 0 0);
   --chart-1: oklch(0.61 0.16 139);
   --chart-2: oklch(0.72 0.16 55);
   --chart-3: oklch(0.82 0.13 100);
@@ -140,20 +138,20 @@
   --ink: oklch(0.95 0.015 125);
   --ember: oklch(0.75 0.15 55);
   --leaf: oklch(0.72 0.16 140);
-  --background: oklch(0.155 0.025 150);
-  --foreground: oklch(0.95 0.015 125);
-  --card: oklch(0.21 0.03 150);
-  --card-foreground: oklch(0.95 0.015 125);
-  --popover: oklch(0.21 0.03 150);
-  --popover-foreground: oklch(0.95 0.015 125);
-  --primary: oklch(0.72 0.16 140);
-  --primary-foreground: oklch(0.16 0.04 150);
-  --secondary: oklch(0.27 0.035 150);
-  --secondary-foreground: oklch(0.95 0.015 125);
-  --muted: oklch(0.25 0.03 150);
-  --muted-foreground: oklch(0.75 0.02 132);
-  --accent: oklch(0.3 0.05 60);
-  --accent-foreground: oklch(0.82 0.12 60);
+  --background: oklch(0.08 0 0);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.14 0 0);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.14 0 0);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.98 0 0);
+  --primary-foreground: oklch(0.08 0 0);
+  --secondary: oklch(0.2 0 0);
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.2 0 0);
+  --muted-foreground: oklch(0.72 0 0);
+  --accent: oklch(0.24 0 0);
+  --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
   --border: oklch(1 0 0 / 12%);
@@ -233,14 +231,6 @@
   color: var(--color-foreground);
   font-family: var(--font-sans);
   transition: background-color 300ms ease, color 300ms ease;
-  }
-
-  /* Apply gentle transitions to common themed surfaces. */
-  button, a, input, textarea, select,
-  [class*="bg-"], [class*="text-"], [class*="border-"] {
-    transition-property: background-color, color, border-color, fill, stroke, box-shadow;
-    transition-duration: 300ms;
-    transition-timing-function: ease;
   }
 
   h1, h2, h3, h4 {
