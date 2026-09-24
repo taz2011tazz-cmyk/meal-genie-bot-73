@@ -218,7 +218,7 @@ function SettingsPage() {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     if (error) {
-      toast.error("Couldn't send reset email", { description: error.message });
+      toast.error("Couldn't send the reset email. Please try again.");
       return;
     }
     toast.success("Password reset email sent");

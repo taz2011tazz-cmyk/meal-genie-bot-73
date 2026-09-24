@@ -3,7 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 
 // RevenueCat webhook receiver.
 // Configure in RevenueCat → Integrations → Webhook:
-//   URL:  https://<your-app>.lovable.app/api/public/webhooks/revenuecat
+//   URL: https://<your-production-domain>/api/public/webhooks/revenuecat
 //   Auth header: `Bearer <REVENUECAT_WEBHOOK_SECRET>`
 // RC sends `Authorization: Bearer <secret>` on every request.
 // Docs: https://www.revenuecat.com/docs/integrations/webhooks

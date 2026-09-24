@@ -4,7 +4,6 @@ import { Loader2 } from "lucide-react";
 import { MealMateLogo } from "@/components/mealmate-logo";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useSession } from "@/hooks/use-session";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,7 +59,7 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}/auth`,
             data: { display_name: displayName || email.split("@")[0] },
           },
         });
@@ -81,7 +80,16 @@ function AuthPage() {
       navigate({ to: "/", replace: true });
     } catch (err) {
       console.error("[Auth] submit error:", err);
-      toast.error(extractErrorMessage(err, "Authentication failed"));
+      const message = extractErrorMessage(err, "Authentication failed").toLowerCase();
+      toast.error(
+        message.includes("invalid login credentials") || message.includes("invalid email or password")
+          ? "Invalid email or password."
+          : message.includes("email not confirmed")
+            ? "Please verify your email before signing in."
+            : message.includes("sandbox") || message.includes("lovable")
+              ? "Authentication is temporarily unavailable. Please try again shortly."
+              : extractErrorMessage(err, "Authentication failed"),
+      );
     } finally {
       setBusy(false);
     }
@@ -164,7 +172,7 @@ function AuthPage() {
                   if (error) throw error;
                   toast.success("Check your inbox for a reset link.");
                 } catch (err) {
-                  toast.error(err instanceof Error ? err.message : "Could not send reset email");
+                  toast.error("Could not send the reset email. Please check the address and try again.");
                 } finally {
                   setBusy(false);
                 }
@@ -190,11 +198,11 @@ function AuthPage() {
             onClick={async () => {
               setBusy(true);
               try {
-                const result = await lovable.auth.signInWithOAuth("google", {
-                  redirect_uri: window.location.origin,
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: { redirectTo: `${window.location.origin}/auth` },
                 });
-                if (result.error) throw result.error;
-                if (!result.redirected) navigate({ to: "/", replace: true });
+                if (error) throw error;
               } catch (err) {
                 console.error("[Auth] Google sign-in error:", err);
                 toast.error(extractErrorMessage(err, "Google sign-in failed"));
@@ -215,11 +223,11 @@ function AuthPage() {
             onClick={async () => {
               setBusy(true);
               try {
-                const result = await lovable.auth.signInWithOAuth("apple", {
-                  redirect_uri: window.location.origin,
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "apple",
+                  options: { redirectTo: `${window.location.origin}/auth` },
                 });
-                if (result.error) throw result.error;
-                if (!result.redirected) navigate({ to: "/", replace: true });
+                if (error) throw error;
               } catch (err) {
                 console.error("[Auth] Apple sign-in error:", err);
                 toast.error(extractErrorMessage(err, "Apple sign-in failed"));
