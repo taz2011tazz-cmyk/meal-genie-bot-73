@@ -31,18 +31,59 @@ function getAuthRedirectUrl(path: string): string {
   return `${origin}${path}`;
 }
 
+type SupabaseAuthError = {
+  message?: unknown;
+  error_description?: unknown;
+  error?: unknown;
+  msg?: unknown;
+  code?: unknown;
+  status?: unknown;
+};
+
 function extractErrorMessage(err: unknown, fallback: string): string {
   if (!err) return fallback;
   if (typeof err === "string") return err;
   if (err instanceof Error && err.message) return err.message;
   if (typeof err === "object") {
-    const e = err as { message?: unknown; error_description?: unknown; error?: unknown; msg?: unknown };
+    const e = err as SupabaseAuthError;
     if (typeof e.message === "string" && e.message) return e.message;
     if (typeof e.error_description === "string" && e.error_description) return e.error_description;
     if (typeof e.error === "string" && e.error) return e.error;
     if (typeof e.msg === "string" && e.msg) return e.msg;
   }
   return fallback;
+}
+
+function describeAuthError(err: unknown, fallback: string): string {
+  const message = extractErrorMessage(err, fallback);
+  if (typeof err !== "object" || !err) return message;
+
+  const details = err as SupabaseAuthError;
+  const code = typeof details.code === "string" ? details.code : undefined;
+  const status = typeof details.status === "number" ? `HTTP ${details.status}` : undefined;
+  return [message, code && `Code: ${code}`, status].filter(Boolean).join(" ");
+}
+
+async function startOAuth(provider: "google" | "apple") {
+  const redirectTo = getAuthRedirectUrl("/auth");
+  console.info(`[Auth] Starting ${provider} OAuth`, { redirectTo });
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo, skipBrowserRedirect: true },
+  });
+  if (error) throw error;
+  if (!data.url) throw new Error("Supabase did not return an OAuth authorization URL.");
+
+  const authorizationUrl = new URL(data.url);
+  const returnedRedirectTo = authorizationUrl.searchParams.get("redirect_to");
+  if (returnedRedirectTo !== redirectTo) {
+    throw new Error(
+      `Supabase returned an unexpected OAuth redirect_to value: ${returnedRedirectTo || "missing"}. Expected ${redirectTo}.`,
+    );
+  }
+
+  window.location.assign(data.url);
 }
 
 
@@ -96,9 +137,7 @@ function AuthPage() {
           ? "Invalid email or password."
           : message.includes("email not confirmed")
             ? "Please verify your email before signing in."
-            : message.includes("sandbox") || message.includes("lovable")
-              ? "Authentication is temporarily unavailable. Please try again shortly."
-              : extractErrorMessage(err, "Authentication failed"),
+            : describeAuthError(err, "Authentication failed"),
       );
     } finally {
       setBusy(false);
@@ -208,14 +247,10 @@ function AuthPage() {
             onClick={async () => {
               setBusy(true);
               try {
-                const { error } = await supabase.auth.signInWithOAuth({
-                  provider: "google",
-                  options: { redirectTo: getAuthRedirectUrl("/auth") },
-                });
-                if (error) throw error;
+                await startOAuth("google");
               } catch (err) {
                 console.error("[Auth] Google sign-in error:", err);
-                toast.error(extractErrorMessage(err, "Google sign-in failed"));
+                toast.error(describeAuthError(err, "Google sign-in failed"));
                 setBusy(false);
               }
             }}
@@ -233,14 +268,10 @@ function AuthPage() {
             onClick={async () => {
               setBusy(true);
               try {
-                const { error } = await supabase.auth.signInWithOAuth({
-                  provider: "apple",
-                  options: { redirectTo: getAuthRedirectUrl("/auth") },
-                });
-                if (error) throw error;
+                await startOAuth("apple");
               } catch (err) {
                 console.error("[Auth] Apple sign-in error:", err);
-                toast.error(extractErrorMessage(err, "Apple sign-in failed"));
+                toast.error(describeAuthError(err, "Apple sign-in failed"));
                 setBusy(false);
               }
             }}
