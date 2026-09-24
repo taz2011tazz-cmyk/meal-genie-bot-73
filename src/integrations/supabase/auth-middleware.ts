@@ -64,6 +64,10 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' })
       process.env['SUPABASE_PUBLISHABLE_KEY'] ||
       process.env['VITE_SUPABASE_PUBLISHABLE_KEY_2'];
 
+    if (SUPABASE_URL && !SUPABASE_URL.includes('zbnvxelenlzurrglqsge.supabase.co')) {
+      throw new Error('MealMate is configured for an unsupported Supabase project.');
+    }
+
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
       const missing = [
         ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),

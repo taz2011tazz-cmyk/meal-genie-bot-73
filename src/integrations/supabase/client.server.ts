@@ -33,6 +33,10 @@ function createSupabaseAdminClient() {
   const SUPABASE_URL = process.env['SUPABASE_URL'];
   const SUPABASE_SERVICE_ROLE_KEY = process.env['SUPABASE_SERVICE_ROLE_KEY'];
 
+  if (SUPABASE_URL && !SUPABASE_URL.includes('zbnvxelenlzurrglqsge.supabase.co')) {
+    throw new Error('MealMate is configured for an unsupported Supabase project.');
+  }
+
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     const missing = [
       ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),

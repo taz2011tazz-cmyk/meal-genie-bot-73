@@ -2,10 +2,12 @@ import { createBrowserClient } from '@supabase/ssr'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const supabaseKey =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY_2 ||
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY_2 ||
   process.env.VITE_SUPABASE_PUBLISHABLE_KEY
+
+if (supabaseUrl && !supabaseUrl.includes('zbnvxelenlzurrglqsge.supabase.co')) {
+  throw new Error('MealMate is configured for an unsupported Supabase project.')
+}
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase browser configuration')
