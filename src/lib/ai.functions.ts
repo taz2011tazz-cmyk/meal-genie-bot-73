@@ -63,39 +63,31 @@ async function callModel(prompt: string): Promise<GeneratedRecipe> {
   const key = process.env["GROQ_API_KEY"];
   if (!key) throw new Error("AI_NOT_CONFIGURED");
 
-  const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
-  let lastStatus = 0;
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
+    },
+    body: JSON.stringify({
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.7,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: SYSTEM },
+        { role: "user", content: prompt },
+      ],
+    }),
+  });
 
-  for (const model of models) {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.7,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: SYSTEM },
-          { role: "user", content: prompt },
-        ],
-      }),
-    });
-
-    if (res.ok) {
-      const j = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-      const text = j.choices?.[0]?.message?.content ?? "{}";
-      return RecipeSchema.parse(extractJson(text));
-    }
-
-    lastStatus = res.status;
-    console.error(`[MealMate AI] Groq request failed for ${model} with status ${res.status}`);
-    if (res.status !== 429 && res.status < 500) break;
+  if (!res.ok) {
+    console.error(`[MealMate AI] Groq request failed with status ${res.status}`);
+    throw new Error("AI_REQUEST_FAILED");
   }
 
-  throw new Error(`AI_REQUEST_FAILED_${lastStatus || "UNKNOWN"}`);
+  const j = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+  const text = j.choices?.[0]?.message?.content ?? "{}";
+  return RecipeSchema.parse(extractJson(text));
 }
 
 function imageUrlFor(r: GeneratedRecipe): string {
