@@ -236,7 +236,7 @@ export const scanKitchen = createServerFn({ method: "POST" })
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "meta-llama/llama-4-scout-17b-16e-instruct",
           messages: [
             {
               role: "user",
@@ -303,7 +303,7 @@ export const scanDish = createServerFn({ method: "POST" })
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
         body: JSON.stringify({
-          model: "google/gemini-3.8-flash",
+          model: "meta-llama/llama-4-scout-17b-16e-instruct",
           messages: [
             {
               role: "user",
@@ -339,15 +339,15 @@ export const askFoodQuestion = createServerFn({ method: "POST" })
   .inputValidator((v: unknown) => z.object({ question: z.string().trim().min(1).max(500) }).parse(v))
   .handler(async ({ data, context }) => {
     await enforceRateLimit("ai_chat", context.userId, 20);
-    const key = process.env["LOVABLE_API_KEY"];
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const key = process.env["GROQ_API_KEY"];
+    if (!key) throw new Error("AI_NOT_CONFIGURED");
     const t0 = Date.now();
     try {
-      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "llama-3.3-70b-versatile",
           messages: [
             {
               role: "system",
