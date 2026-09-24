@@ -30,61 +30,15 @@ function getAuthRedirectUrl(path: string): string {
   return `${window.location.origin}${path}`;
 }
 
-type SupabaseAuthError = {
-  message?: unknown;
-  error_description?: unknown;
-  error?: unknown;
-  msg?: unknown;
-  code?: unknown;
-  status?: unknown;
-};
-
 function extractErrorMessage(err: unknown, fallback: string): string {
   if (!err) return fallback;
   if (typeof err === "string") return err;
   if (err instanceof Error && err.message) return err.message;
-  if (typeof err === "object") {
-    const e = err as SupabaseAuthError;
-    if (typeof e.message === "string" && e.message) return e.message;
-    if (typeof e.error_description === "string" && e.error_description) return e.error_description;
-    if (typeof e.error === "string" && e.error) return e.error;
-    if (typeof e.msg === "string" && e.msg) return e.msg;
+  if (typeof err === "object" && typeof (err as { message?: unknown }).message === "string") {
+    return (err as { message: string }).message;
   }
   return fallback;
 }
-
-function describeAuthError(err: unknown, fallback: string): string {
-  const message = extractErrorMessage(err, fallback);
-  if (typeof err !== "object" || !err) return message;
-
-  const details = err as SupabaseAuthError;
-  const code = typeof details.code === "string" ? details.code : undefined;
-  const status = typeof details.status === "number" ? `HTTP ${details.status}` : undefined;
-  return [message, code && `Code: ${code}`, status].filter(Boolean).join(" ");
-}
-
-async function startOAuth(provider: "google" | "apple") {
-  const redirectTo = getAuthRedirectUrl("/auth");
-  console.info(`[Auth] Starting ${provider} OAuth`, { redirectTo });
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
-    options: { redirectTo, skipBrowserRedirect: true },
-  });
-  if (error) throw error;
-  if (!data.url) throw new Error("Supabase did not return an OAuth authorization URL.");
-
-  const authorizationUrl = new URL(data.url);
-  const returnedRedirectTo = authorizationUrl.searchParams.get("redirect_to");
-  if (returnedRedirectTo !== redirectTo) {
-    throw new Error(
-      `Supabase returned an unexpected OAuth redirect_to value: ${returnedRedirectTo || "missing"}. Expected ${redirectTo}.`,
-    );
-  }
-
-  window.location.assign(data.url);
-}
-
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -129,7 +83,7 @@ function AuthPage() {
         }
         toast.success("Welcome to MealMate!");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (error) throw error;
       }
       navigate({ to: "/", replace: true });
@@ -141,7 +95,7 @@ function AuthPage() {
           ? "Invalid email or password."
           : message.includes("email not confirmed")
             ? "Please verify your email before signing in."
-            : describeAuthError(err, "Authentication failed"),
+            : extractErrorMessage(err, "Authentication failed"),
       );
     } finally {
       setBusy(false);
@@ -236,56 +190,6 @@ function AuthPage() {
           )}
         </form>
 
-        <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="h-px flex-1 bg-border" />
-          OR
-          <span className="h-px flex-1 bg-border" />
-        </div>
-
-        <div className="space-y-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true);
-              try {
-                await startOAuth("google");
-              } catch (err) {
-                console.error("[Auth] Google sign-in error:", err);
-                toast.error(describeAuthError(err, "Google sign-in failed"));
-                setBusy(false);
-              }
-            }}
-          >
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.4-1.6 4-5.5 4-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.9 1.5l2.6-2.5C16.9 3.3 14.7 2.3 12 2.3 6.7 2.3 2.4 6.6 2.4 12s4.3 9.7 9.6 9.7c5.5 0 9.2-3.9 9.2-9.4 0-.6-.1-1.1-.2-1.6H12z"/>
-            </svg>
-            Continue with Google
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true);
-              try {
-                await startOAuth("apple");
-              } catch (err) {
-                console.error("[Auth] Apple sign-in error:", err);
-                toast.error(describeAuthError(err, "Apple sign-in failed"));
-                setBusy(false);
-              }
-            }}
-          >
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M16.365 12.855c-.02-2.115 1.72-3.13 1.8-3.185-.98-1.435-2.51-1.63-3.055-1.655-1.3-.13-2.54.765-3.2.765-.66 0-1.68-.745-2.765-.725-1.42.02-2.735.825-3.465 2.095-1.48 2.565-.375 6.36 1.06 8.44.705 1.02 1.545 2.165 2.645 2.125 1.06-.045 1.46-.685 2.745-.685 1.285 0 1.645.685 2.77.66 1.145-.02 1.87-1.03 2.57-2.055.815-1.185 1.15-2.34 1.17-2.4-.025-.01-2.24-.86-2.275-3.38ZM14.09 6.5c.585-.71.98-1.695.87-2.68-.84.035-1.865.56-2.47 1.27-.54.63-1.015 1.635-.885 2.6.94.07 1.895-.475 2.485-1.19Z"/>
-            </svg>
-            Continue with Apple
-          </Button>
-        </div>
 
 
         <p className="mt-6 text-center text-sm text-muted-foreground">

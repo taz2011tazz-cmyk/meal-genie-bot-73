@@ -60,7 +60,7 @@ function extractJson(text: string): unknown {
 }
 
 async function callModel(prompt: string): Promise<GeneratedRecipe> {
-  const key = process.env.GROQ_API_KEY;
+  const key = process.env["GROQ_API_KEY"];
   if (!key) throw new Error("AI_NOT_CONFIGURED");
 
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
