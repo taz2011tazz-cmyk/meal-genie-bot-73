@@ -24,10 +24,11 @@ import { LocaleProvider } from "@/components/locale-provider";
 import { UpgradeModalProvider } from "@/components/upgrade-modal";
 import { shouldOfferOnboarding } from "@/lib/preferences";
 import { useSession } from "@/hooks/use-session";
+import { useShellMetrics } from "@/hooks/use-shell-metrics";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
@@ -55,7 +56,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
           This page didn't load
@@ -165,6 +166,7 @@ function RootComponent() {
   const isMarketplace =
     pathname === "/restaurants" || pathname.startsWith("/restaurant/");
   const showAppHeader = pathname !== "/" && !isMarketplace;
+  useShellMetrics(showAppHeader ? "with-header" : "no-header");
 
   // First open: the 8-question setup comes before sign-up. Signed-in users
   // who already finished onboarding go straight to the app.
@@ -190,15 +192,21 @@ function RootComponent() {
       <ThemeProvider>
         <LocaleProvider>
           <UpgradeModalProvider>
-            <div
-              className={`mx-auto flex min-h-screen w-full max-w-3xl flex-col bg-background pb-20 ${isMarketplace ? "marketplace-dark" : ""}`}
-            >
+            <div className={`h-dvh w-full overflow-hidden bg-background ${isMarketplace ? "marketplace-dark" : ""}`}>
               {showAppHeader && <AppHeader />}
-              <AuthGate>
-                <div key={pathname} className="page-enter flex flex-1 flex-col">
-                  <Outlet />
+              {/* The one scroll container. Header and nav are siblings, not children. */}
+              <div
+                id="app-scroll"
+                className="h-full overflow-y-auto overscroll-y-none pb-[var(--app-nav-h)] pt-[var(--app-header-h)]"
+              >
+                <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col">
+                  <AuthGate>
+                    <div key={pathname} className="page-enter flex flex-1 flex-col">
+                      <Outlet />
+                    </div>
+                  </AuthGate>
                 </div>
-              </AuthGate>
+              </div>
               {isMarketplace ? <MarketplaceBottomNav /> : <BottomNav />}
             </div>
             <Toaster position="top-center" />

@@ -31,11 +31,11 @@ export function AuthGate({ children }: { children: ReactNode }) {
       lastActivity = Date.now();
     };
     const events: (keyof WindowEventMap)[] = ["mousemove", "keydown", "click", "touchstart", "scroll"];
-    events.forEach((e) => window.addEventListener(e, bump, { passive: true }));
+    events.forEach((e) => window.addEventListener(e, bump, { passive: true, capture: true }));
     const iv = window.setInterval(async () => {
       if (Date.now() - lastActivity > INACTIVITY_MS) {
         window.clearInterval(iv);
-        events.forEach((e) => window.removeEventListener(e, bump));
+        events.forEach((e) => window.removeEventListener(e, bump, { capture: true }));
         await supabase.auth.signOut();
         toast.message("Signed out due to inactivity.");
         navigate({ to: "/auth", replace: true });
@@ -43,7 +43,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     }, 60 * 1000);
     return () => {
       window.clearInterval(iv);
-      events.forEach((e) => window.removeEventListener(e, bump));
+      events.forEach((e) => window.removeEventListener(e, bump, { capture: true }));
     };
   }, [user, navigate]);
 

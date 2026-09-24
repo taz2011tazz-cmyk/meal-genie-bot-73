@@ -61,6 +61,8 @@
 }
 
 :root {
+  --app-header-h: calc(4rem + env(safe-area-inset-top, 0px));
+  --app-nav-h: calc(4rem + env(safe-area-inset-bottom, 0px));
   --radius: 1rem;
   /* MealMate logo palette: fresh green #4a9b2f, deep green #0d4423, warm orange #f5853c */
   --cream: oklch(0.982 0.012 115);
@@ -214,19 +216,23 @@
 
 @layer base {
   * {
-    border-color: var(--color-border);
+  border-color: var(--color-border);
   }
 
   html {
-    /* Smooth theme transitions across the app (300ms). */
-    transition: background-color 300ms ease, color 300ms ease;
+  height: 100%;
+  overscroll-behavior-y: none;
+  transition: background-color 300ms ease, color 300ms ease;
   }
 
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-sans);
-    transition: background-color 300ms ease, color 300ms ease;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior-y: none;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  transition: background-color 300ms ease, color 300ms ease;
   }
 
   /* Apply gentle transitions to common themed surfaces. */

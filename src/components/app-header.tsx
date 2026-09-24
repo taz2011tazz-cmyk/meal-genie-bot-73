@@ -30,7 +30,7 @@ export function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header id="app-header" className="fixed inset-x-0 top-0 z-40 bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2" aria-label="MealMate home">
           <img
