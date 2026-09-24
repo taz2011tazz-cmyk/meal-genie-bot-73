@@ -21,6 +21,16 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+const PRODUCTION_APP_ORIGIN = "https://mealmates-nine.vercel.app";
+
+function getAuthRedirectUrl(path: string): string {
+  const origin = import.meta.env.PROD
+    ? (import.meta.env["VITE_PRODUCTION_APP_ORIGIN"] || PRODUCTION_APP_ORIGIN).replace(/\/$/, "")
+    : window.location.origin;
+
+  return `${origin}${path}`;
+}
+
 function extractErrorMessage(err: unknown, fallback: string): string {
   if (!err) return fallback;
   if (typeof err === "string") return err;
@@ -59,7 +69,7 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth`,
+            emailRedirectTo: getAuthRedirectUrl("/auth"),
             data: { display_name: displayName || email.split("@")[0] },
           },
         });
@@ -167,7 +177,7 @@ function AuthPage() {
                 setBusy(true);
                 try {
                   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: `${window.location.origin}/reset-password`,
+                    redirectTo: getAuthRedirectUrl("/reset-password"),
                   });
                   if (error) throw error;
                   toast.success("Check your inbox for a reset link.");
@@ -200,7 +210,7 @@ function AuthPage() {
               try {
                 const { error } = await supabase.auth.signInWithOAuth({
                   provider: "google",
-                  options: { redirectTo: `${window.location.origin}/auth` },
+                  options: { redirectTo: getAuthRedirectUrl("/auth") },
                 });
                 if (error) throw error;
               } catch (err) {
@@ -225,7 +235,7 @@ function AuthPage() {
               try {
                 const { error } = await supabase.auth.signInWithOAuth({
                   provider: "apple",
-                  options: { redirectTo: `${window.location.origin}/auth` },
+                  options: { redirectTo: getAuthRedirectUrl("/auth") },
                 });
                 if (error) throw error;
               } catch (err) {
