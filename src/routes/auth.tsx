@@ -21,13 +21,9 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-const PRODUCTION_APP_ORIGIN = "https://mealmates-nine.vercel.app";
-
 function getAuthRedirectUrl(path: string): string {
-  const origin = import.meta.env.PROD
-    ? (import.meta.env["VITE_PRODUCTION_APP_ORIGIN"] || PRODUCTION_APP_ORIGIN).replace(/\/$/, "")
-    : window.location.origin;
-
+  const configuredOrigin = import.meta.env["VITE_PRODUCTION_APP_ORIGIN"];
+  const origin = (configuredOrigin || window.location.origin).replace(/\/$/, "");
   return `${origin}${path}`;
 }
 
