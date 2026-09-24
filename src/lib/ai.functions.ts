@@ -70,7 +70,7 @@ async function callModel(prompt: string): Promise<GeneratedRecipe> {
       Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
-      model: "qwen/qwen3.8-27b",
+      model: "llama-3.3-70b-versatile",
       temperature: 0.7,
       response_format: { type: "json_object" },
       messages: [
