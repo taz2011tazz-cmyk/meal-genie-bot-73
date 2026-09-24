@@ -60,21 +60,32 @@ function extractJson(text: string): unknown {
 }
 
 async function callModel(prompt: string): Promise<GeneratedRecipe> {
-  const key = process.env["LOVABLE_API_KEY"];
-  if (!key) throw new Error("Missing LOVABLE_API_KEY");
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const key = process.env.GROQ_API_KEY;
+  if (!key) throw new Error("AI_NOT_CONFIGURED");
+
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
+    },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
+      model: "qwen/qwen3.8-27b",
+      temperature: 0.7,
+      response_format: { type: "json_object" },
       messages: [
         { role: "system", content: SYSTEM },
         { role: "user", content: prompt },
       ],
     }),
   });
-  if (!res.ok) throw new Error(`AI gateway ${res.status}: ${await res.text()}`);
-  const j = (await res.json()) as { choices: { message: { content: string } }[] };
+
+  if (!res.ok) {
+    console.error(`[MealMate AI] Groq request failed with status ${res.status}`);
+    throw new Error("AI_REQUEST_FAILED");
+  }
+
+  const j = (await res.json()) as { choices?: { message?: { content?: string } }[] };
   const text = j.choices?.[0]?.message?.content ?? "{}";
   return RecipeSchema.parse(extractJson(text));
 }

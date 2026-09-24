@@ -62,8 +62,12 @@ function RecipesPage() {
       const { slug } = await generateRecipe({ data: { query: query.trim() } });
       navigate({ to: "/recipe/$slug", params: { slug } });
     } catch (err) {
-      toast.error("Couldn't generate that recipe", {
-        description: err instanceof Error ? err.message : undefined,
+      const message = err instanceof Error ? err.message : "";
+      const authError = /AUTH_REQUIRED|Unauthorized|Invalid user session|No authorization/i.test(message);
+      toast.error(authError ? "Your session expired" : "Couldn't generate that recipe", {
+        description: authError
+          ? "Please sign in again to cook a recipe."
+          : "The kitchen assistant is unavailable right now. Please try again.",
       });
     } finally {
       setBusy(false);
@@ -77,8 +81,12 @@ function RecipesPage() {
       const { slug } = await surpriseMe();
       navigate({ to: "/recipe/$slug", params: { slug } });
     } catch (err) {
-      toast.error("The chef is busy", {
-        description: err instanceof Error ? err.message : undefined,
+      const message = err instanceof Error ? err.message : "";
+      const authError = /AUTH_REQUIRED|Unauthorized|Invalid user session|No authorization/i.test(message);
+      toast.error(authError ? "Your session expired" : "The chef is busy", {
+        description: authError
+          ? "Please sign in again to cook a recipe."
+          : "The kitchen assistant is unavailable right now. Please try again.",
       });
     } finally {
       setBusy(false);
