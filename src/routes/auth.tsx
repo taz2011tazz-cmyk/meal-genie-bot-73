@@ -22,6 +22,11 @@ export const Route = createFileRoute("/auth")({
 });
 
 function getAuthRedirectUrl(path: string): string {
+  const configured = import.meta.env["VITE_SUPABASE_REDIRECT_URL"] || process.env["NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL"];
+  if (configured) {
+    const base = configured.replace(/\/$/, "");
+    return `${base}${path}`;
+  }
   return `${window.location.origin}${path}`;
 }
 
@@ -99,9 +104,14 @@ function AuthPage() {
     if (busy) return;
     setBusy(true);
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+      if (!normalizedEmail || password.length < 6) {
+        toast.error("Enter a valid email and a password with at least 6 characters.");
+        return;
+      }
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
-          email,
+          email: normalizedEmail,
           password,
           options: {
             emailRedirectTo: getAuthRedirectUrl("/auth"),
@@ -182,7 +192,7 @@ function AuthPage() {
               id="password"
               type="password"
               required
-              minLength={8}
+              minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"

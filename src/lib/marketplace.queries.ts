@@ -81,9 +81,10 @@ export const marketplaceFeedQuery = () =>
       const [restaurantsRes, promotionsRes, dishesRes] = await Promise.all([
         hub
           .from("restaurants")
-          .select(`${RESTAURANT_COLUMNS},branches(id,name,address,latitude,longitude,is_active)`)
+          .select(`${RESTAURANT_COLUMNS},subscriptions!inner(status,expiration_date),branches(id,name,address,latitude,longitude,is_active)`)
           .eq("is_suspended", false)
           .eq("onboarding_complete", true)
+          .eq("subscriptions.status", "active")
           .order("name")
           .limit(60),
         hub
