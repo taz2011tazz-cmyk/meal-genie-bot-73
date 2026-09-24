@@ -10,7 +10,7 @@ export function MealMateLogo({ className, imageClassName }: { className?: string
         height={40}
         decoding="async"
         fetchPriority="high"
-        className={cn("size-10 object-contain", imageClassName)}
+        className={cn("size-10 shrink-0 overflow-hidden rounded-full object-contain", imageClassName)}
       />
       <span className="font-display text-2xl leading-none">MealMate</span>
     </span>
