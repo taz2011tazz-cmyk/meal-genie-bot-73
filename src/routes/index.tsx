@@ -108,10 +108,14 @@ function Index() {
     try {
       const { slug } = await generateRecipe({ data: { query: query.trim() } });
       navigate({ to: "/recipe/$slug", params: { slug } });
-    } catch (err) {
-      toast.error("Couldn't cook that up", {
-        description: err instanceof Error ? err.message : "Try again in a moment.",
-      });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "";
+    const authError = /AUTH_REQUIRED|Unauthorized|Invalid user session|No authorization/i.test(message);
+    toast.error(authError ? "Your session expired" : "Couldn't cook that up", {
+      description: authError
+        ? "Please sign in again to cook a recipe."
+        : "Try again in a moment.",
+    });
     } finally {
       setBusy(null);
     }

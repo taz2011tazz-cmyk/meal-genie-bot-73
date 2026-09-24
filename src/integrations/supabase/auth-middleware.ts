@@ -3,6 +3,7 @@ import { createMiddleware } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
+import { supabase } from './client'
 
 
 
@@ -31,7 +32,30 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
   };
 }
 
-export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
+export const requireSupabaseAuth = createMiddleware({ type: 'function' })
+  .client(async ({ next }) => {
+    const { data, error } = await supabase.auth.getSession();
+    let session = data.session;
+
+    if (error || !session) {
+      throw new Error('AUTH_REQUIRED');
+    }
+
+    if (session.expires_at && session.expires_at * 1000 <= Date.now() + 30_000) {
+      const refreshed = await supabase.auth.refreshSession();
+      if (refreshed.error || !refreshed.data.session) {
+        throw new Error('AUTH_REQUIRED');
+      }
+      session = refreshed.data.session;
+    }
+
+    return next({
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+  })
+  .server(
   async ({ next }) => {
     
     const SUPABASE_URL = process.env['SUPABASE_URL'] || process.env['VITE_SUPABASE_URL'];
@@ -64,13 +88,13 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       throw new Error('Unauthorized: Only Bearer tokens are supported');
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    if (!token) {
-      throw new Error('Unauthorized: No token provided');
+    const token = authHeader.slice('Bearer '.length).trim();
+    if (!token || token === 'undefined' || token === 'null' || token.startsWith('sb_') || token.startsWith('http')) {
+      throw new Error('Unauthorized: Invalid user session');
     }
 
     if (token.split('.').length !== 3) {
-      throw new Error('Unauthorized: Invalid token');
+      throw new Error('Unauthorized: Invalid user session');
     }
 
     const supabase = createClient<Database>(
@@ -91,20 +115,16 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       }
     );
 
-    const { data, error } = await supabase.auth.getClaims(token);
-    if (error || !data?.claims) {
-      throw new Error('Unauthorized: Invalid token');
-    }
-
-    if (!data.claims.sub) {
-      throw new Error('Unauthorized: No user ID found in token');
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      throw new Error('Unauthorized: Invalid user session');
     }
 
     return next({
       context: {
         supabase,
-        userId: data.claims.sub,
-        claims: data.claims,
+        userId: data.user.id,
+        user: data.user,
       },
     });
   },
