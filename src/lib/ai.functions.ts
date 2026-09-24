@@ -228,11 +228,11 @@ export const scanKitchen = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await enforceRateLimit("ai_vision", context.userId, 10);
-    const key = process.env["LOVABLE_API_KEY"];
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const key = process.env["GROQ_API_KEY"];
+    if (!key) throw new Error("AI_NOT_CONFIGURED");
     const t0 = Date.now();
     try {
-      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
         body: JSON.stringify({
@@ -295,11 +295,11 @@ export const scanDish = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await enforceRateLimit("ai_vision", context.userId, 10);
-    const key = process.env["LOVABLE_API_KEY"];
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const key = process.env["GROQ_API_KEY"];
+    if (!key) throw new Error("AI_NOT_CONFIGURED");
     const t0 = Date.now();
     try {
-      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
         body: JSON.stringify({
