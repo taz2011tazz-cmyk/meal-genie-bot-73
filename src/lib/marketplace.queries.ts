@@ -85,6 +85,7 @@ export const marketplaceFeedQuery = () =>
           .eq("is_suspended", false)
           .eq("onboarding_complete", true)
           .eq("subscriptions.status", "active")
+          .gt("subscriptions.expiration_date", new Date().toISOString())
           .order("name")
           .limit(60),
         hub

@@ -42,6 +42,7 @@ export const approvedRestaurantsQuery = () =>
         .eq("onboarding_complete", true)
         .eq("is_suspended", false)
         .eq("subscriptions.status", "active")
+        .gt("subscriptions.expiration_date", new Date().toISOString())
         .order("name");
       if (error) throw error;
       return ((data ?? []) as any[]).map((row) => ({
@@ -77,6 +78,7 @@ export const restaurantBySlugQuery = (slug: string) =>
         .eq("onboarding_complete", true)
         .eq("is_suspended", false)
         .eq("subscriptions.status", "active")
+        .gt("subscriptions.expiration_date", new Date().toISOString())
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
