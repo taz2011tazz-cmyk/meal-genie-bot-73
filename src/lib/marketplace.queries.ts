@@ -61,7 +61,7 @@ export type FeedDish = {
 };
 
 const RESTAURANT_COLUMNS =
-  "id,slug,name,description,cuisine,logo_url,cover_image_url,opening_hours,price_range,delivery_fee,delivery_radius_km,min_order_amount,delivery_estimate_minutes,currency,avg_rating,rating_count,is_verified,is_accepting_orders,paused_until,pause_message,supports_pickup,supports_delivery,address";
+  "id,slug,name,description,cuisine,logo_url,cover_url,opening_hours,minimum_order,prep_time_minutes,delivery_enabled,pickup_enabled,address,latitude,longitude,is_suspended,onboarding_complete";
 
 export type MarketplaceFeed = {
   restaurants: FeedRestaurant[];
@@ -75,33 +75,31 @@ export const marketplaceFeedQuery = () =>
     queryKey: ["marketplace-feed"],
     staleTime: 60_000,
     queryFn: async (): Promise<MarketplaceFeed> => {
+      // Hub's production schema is newer than the generated Consumer types.
+      // Keep this adapter isolated so the rest of the Consumer model stays stable.
+      const hub = supabase as any;
       const [restaurantsRes, promotionsRes, dishesRes] = await Promise.all([
-        supabase
+        hub
           .from("restaurants")
-          .select(`${RESTAURANT_COLUMNS},restaurant_locations(latitude,longitude,label)`)
-          .eq("approval_status", "approved")
-          .order("avg_rating", { ascending: false })
+          .select(`${RESTAURANT_COLUMNS},branches(id,name,address,latitude,longitude,is_active)`)
+          .eq("is_suspended", false)
+          .eq("onboarding_complete", true)
+          .order("name")
           .limit(60),
-        supabase
-          .from("restaurant_promotions")
-          .select(
-            "id,restaurant_id,code,title,description,kind,value,min_order_amount,max_discount_amount,starts_at,ends_at,is_active",
-          )
+        hub
+          .from("promotions")
+          .select("id,restaurant_id,code,title,description,kind,value,min_order_amount,max_discount_amount,starts_at,ends_at,is_active")
           .eq("is_active", true)
           .limit(60),
-        supabase
+        hub
           .from("menu_items")
-          .select(
-            "id,restaurant_id,name,description,image_url,price,category,dietary_tags,is_available",
-          )
-          .eq("is_hidden", false)
+          .select("id,restaurant_id,name,description,image_url,price,is_available,menu_categories(name)")
           .eq("is_available", true)
-          .order("sort_order")
+          .order("position")
           .limit(80),
       ]);
 
       if (restaurantsRes.error) throw restaurantsRes.error;
-      if (promotionsRes.error) throw promotionsRes.error;
       if (dishesRes.error) throw dishesRes.error;
 
       const now = Date.now();
@@ -112,12 +110,38 @@ export const marketplaceFeedQuery = () =>
       });
 
       return {
-        restaurants: (restaurantsRes.data ?? []) as unknown as FeedRestaurant[],
+        restaurants: (restaurantsRes.data ?? []).map((row: any) => ({
+          ...row,
+          cover_image_url: row.cover_url ?? null,
+          delivery_fee: 0,
+          delivery_radius_km: 0,
+          min_order_amount: Number(row.minimum_order ?? 0),
+          delivery_estimate_minutes: Number(row.prep_time_minutes ?? 30),
+          currency: "ZAR",
+          avg_rating: 0,
+          rating_count: 0,
+          is_verified: Boolean(row.onboarding_complete),
+          is_accepting_orders: !row.is_suspended,
+          paused_until: null,
+          pause_message: null,
+          supports_pickup: Boolean(row.pickup_enabled),
+          supports_delivery: Boolean(row.delivery_enabled),
+          restaurant_locations: (row.branches ?? []).map((branch: any) => ({
+            latitude: branch.latitude ?? row.latitude,
+            longitude: branch.longitude ?? row.longitude,
+            label: branch.name ?? branch.address ?? null,
+          })),
+        })) as FeedRestaurant[],
         promotions,
-        dishes: ((dishesRes.data ?? []) as unknown as FeedDish[]).map((d) => ({
+        dishes: ((dishesRes.data ?? []) as any[]).map((d) => ({
           ...d,
-          dietary_tags: Array.isArray(d.dietary_tags) ? d.dietary_tags : [],
-        })),
+          category: d.menu_categories?.name ?? null,
+          dietary_tags: [
+            ...(d.is_vegan ? ["vegan"] : []),
+            ...(d.is_vegetarian ? ["vegetarian"] : []),
+            ...(d.is_halaal ? ["halaal"] : []),
+          ],
+        })) as FeedDish[],
       };
     },
   });
@@ -129,8 +153,8 @@ export const orderHistoryRestaurantsQuery = (userId: string | undefined) =>
     staleTime: 5 * 60_000,
     queryFn: async (): Promise<string[]> => {
       if (!userId) return [];
-      const { data, error } = await supabase
-        .from("restaurant_orders")
+      const { data, error } = await (supabase as any)
+        .from("orders")
         .select("restaurant_id,placed_at")
         .eq("customer_id", userId)
         .order("placed_at", { ascending: false })

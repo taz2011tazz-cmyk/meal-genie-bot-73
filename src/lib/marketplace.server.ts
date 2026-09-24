@@ -135,23 +135,34 @@ export type PricingResult = {
 };
 
 async function loadRestaurant(restaurantId: string): Promise<RestaurantRow> {
-  const { data } = await supabaseAdmin
+  const { data } = await (supabaseAdmin as any)
     .from("restaurants")
-    .select(
-      "id,currency,approval_status,is_accepting_orders,pause_message,paused_until,opening_hours,delivery_fee,min_order_amount,supports_delivery,supports_pickup",
-    )
+    .select("id,opening_hours,minimum_order,delivery_enabled,pickup_enabled,is_suspended,onboarding_complete")
     .eq("id", restaurantId)
     .maybeSingle();
-  if (!data) throw new MarketplaceError("restaurant_unavailable", "This restaurant is unavailable.", 404);
-  return data as unknown as RestaurantRow;
+  if (!data || data.is_suspended || !data.onboarding_complete) {
+    throw new MarketplaceError("restaurant_unavailable", "This restaurant is unavailable.", 404);
+  }
+  return {
+    ...data,
+    currency: "ZAR",
+    approval_status: "approved",
+    is_accepting_orders: true,
+    pause_message: null,
+    paused_until: null,
+    delivery_fee: 0,
+    min_order_amount: Number(data.minimum_order ?? 0),
+    supports_delivery: Boolean(data.delivery_enabled),
+    supports_pickup: Boolean(data.pickup_enabled),
+  } as RestaurantRow;
 }
 
 async function loadBranch(restaurantId: string, branchId: string | null | undefined) {
   if (!branchId) return null;
-  const { data } = await supabaseAdmin
-    .from("restaurant_locations")
+  const { data } = await (supabaseAdmin as any)
+    .from("branches")
     .select(
-      "id,restaurant_id,label,is_active,is_accepting_orders,opening_hours,delivery_fee,min_order_amount,delivery_estimate_minutes",
+      "id,restaurant_id,name,is_active,opening_hours",
     )
     .eq("id", branchId)
     .eq("restaurant_id", restaurantId)
@@ -194,17 +205,17 @@ export async function priceCart(
   }
 
   const ids = [...new Set(input.items.map((i) => i.menu_item_id))];
-  const { data: menuRows, error: menuErr } = await supabaseAdmin
+  const { data: menuRows, error: menuErr } = await (supabaseAdmin as any)
     .from("menu_items")
-    .select("id,name,price,is_available,is_hidden,modifier_groups")
+    .select("id,name,price,is_available")
     .in("id", ids)
     .eq("restaurant_id", restaurant.id);
   if (menuErr) throw new Error(menuErr.message);
-  const menu = new Map((menuRows ?? []).map((m) => [m.id, m as unknown as MenuRow]));
+  const menu = new Map(((menuRows ?? []) as any[]).map((m: any) => [m.id, m as MenuRow]));
 
   const lines: PricedLine[] = input.items.map((item) => {
     const row = menu.get(item.menu_item_id);
-    if (!row || row.is_hidden) {
+    if (!row) {
       throw new MarketplaceError("item_unavailable", "An item in your cart is no longer on the menu.");
     }
     if (!row.is_available) {
@@ -285,7 +296,7 @@ async function resolvePromotion(
   let customerOrderCount = 0;
   if (userId) {
     const { count } = await supabaseAdmin
-      .from("restaurant_orders")
+      .from("orders" as never)
       .select("id", { count: "exact", head: true })
       .eq("customer_id", userId);
     customerOrderCount = count ?? 0;
@@ -353,47 +364,42 @@ export async function createOrder(userId: string, input: OrderV2Input) {
 
   const payment = paymentConfig();
 
-  const { data: order, error } = await supabaseAdmin
-    .from("restaurant_orders")
+  const { data: order, error } = await (supabaseAdmin as any)
+    .from("orders")
     .insert({
       restaurant_id: priced.restaurant.id,
       branch_id: priced.branch?.id ?? null,
       customer_id: userId,
       status: "new",
-      fulfillment_type: fulfillment,
+      fulfillment,
       subtotal: priced.subtotal,
-      discount_total: priced.discount,
+      discount: priced.discount,
       delivery_fee: priced.deliveryFee,
       total: priced.total,
-      currency: priced.currency,
       delivery_address: fulfillment === "delivery" ? (input.delivery_address ?? "").trim() : null,
-      contact_phone: input.contact_phone.trim(),
+      customer_phone: input.contact_phone.trim(),
       notes: input.notes?.trim() || null,
       promotion_id: priced.promotion?.promotion.id ?? null,
-      promotion_code: priced.promotion?.promotion.code ?? null,
-      // Only trusted backend/webhook logic may ever set this to "paid".
       payment_status: "unpaid",
-      payment_method: payment.configured ? "card" : "cash_on_delivery",
-      payment_provider: payment.provider,
     } as never)
-    .select("id,status,total,currency,payment_status")
+    .select("id,status,total,payment_status")
     .single();
   if (error) throw new Error(error.message);
 
-  const { error: itemsErr } = await supabaseAdmin.from("order_items").insert(
+  const { error: itemsErr } = await (supabaseAdmin as any).from("order_items").insert(
     priced.lines.map((l) => ({
       order_id: order.id,
+      restaurant_id: priced.restaurant.id,
       menu_item_id: l.menu_item_id,
       name: l.name,
       unit_price: l.unit_price,
       quantity: l.quantity,
-      line_total: l.line_total,
-      modifiers: l.modifiers as never,
+      total_price: l.line_total,
       notes: input.items.find((i) => i.menu_item_id === l.menu_item_id)?.notes ?? null,
-    })) as never,
+    })),
   );
   if (itemsErr) {
-    await supabaseAdmin.from("restaurant_orders").delete().eq("id", order.id);
+    await (supabaseAdmin as any).from("orders").delete().eq("id", order.id);
     throw new Error(itemsErr.message);
   }
 
