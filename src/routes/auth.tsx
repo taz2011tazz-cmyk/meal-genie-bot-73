@@ -21,14 +21,8 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-const PRODUCTION_APP_ORIGIN = "https://mealmates-nine.vercel.app";
-
 function getAuthRedirectUrl(path: string): string {
-  const origin = import.meta.env.PROD
-    ? (import.meta.env["VITE_PRODUCTION_APP_ORIGIN"] || PRODUCTION_APP_ORIGIN).replace(/\/$/, "")
-    : window.location.origin;
-
-  return `${origin}${path}`;
+  return `${window.location.origin}${path}`;
 }
 
 type SupabaseAuthError = {
