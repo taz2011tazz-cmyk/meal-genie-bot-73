@@ -49,9 +49,9 @@ export const southAfricanFavoritesQuery = () =>
     },
   });
 
-export const recipesByCategoryQuery = (category: string | undefined) =>
+export const recipesByCategoryQuery = (category: string | undefined, search = "") =>
   queryOptions({
-    queryKey: ["recipes", "category", category ?? "all"],
+    queryKey: ["recipes", "category", category ?? "all", search.trim().toLowerCase()],
     queryFn: async () => {
       let q = supabase
         .from("recipes")
@@ -64,6 +64,10 @@ export const recipesByCategoryQuery = (category: string | undefined) =>
         q = q.or(
           `category.eq.${category},country.eq.${category},cuisine.eq.${category},diet_tags.cs.{${category}}`,
         );
+      }
+      if (search.trim()) {
+        const term = search.trim().replace(/[(),]/g, " ");
+        q = q.or(`name.ilike.%${term}%,cuisine.ilike.%${term}%,category.ilike.%${term}%,country.ilike.%${term}%`);
       }
       const { data, error } = await q;
       if (error) throw error;

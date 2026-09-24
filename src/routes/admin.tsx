@@ -30,6 +30,7 @@ import {
   adminRevokePremium,
   adminSavePromo,
 } from "@/lib/premium.functions";
+import { createManagedRestaurant } from "@/lib/managed-restaurants.functions";
 import {
   adminListAuditLogs,
   adminListUsers,
@@ -87,6 +88,46 @@ function usePresetRange(preset: Preset, custom: { from: string; to: string }) {
     if (preset === "30d") return { from: subDays(now, 30).toISOString(), to: now.toISOString() };
     return { from: subMonths(now, 12).toISOString(), to: now.toISOString() };
   }, [preset, custom.from, custom.to]);
+}
+
+function ManagedRestaurantsTab() {
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [ownerName, setOwnerName] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      const result = await createManagedRestaurant({ data: { email, name, ownerName } });
+      toast.success(`Invite sent. One-month trial ends ${format(new Date(result.trialEndsAt), "PPP")}.`);
+      setEmail("");
+      setName("");
+      setOwnerName("");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not create restaurant account.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="max-w-2xl rounded-3xl border border-border/60 bg-card p-6 shadow-sm">
+      <div className="mb-6">
+        <h2 className="font-display text-2xl">Create a restaurant account</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Invite a restaurant owner by email. Their account starts with a one-month RevenueCat trial and becomes visible to Consumer after Hub launch.
+        </p>
+      </div>
+      <form onSubmit={submit} className="grid gap-4">
+        <Input required type="text" placeholder="Restaurant name" value={name} onChange={(event) => setName(event.target.value)} />
+        <Input required type="text" placeholder="Owner full name" value={ownerName} onChange={(event) => setOwnerName(event.target.value)} />
+        <Input required type="email" placeholder="Owner email" value={email} onChange={(event) => setEmail(event.target.value)} />
+        <Button type="submit" disabled={busy}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send invite and start trial"}</Button>
+      </form>
+    </section>
+  );
 }
 
 function AdminPage() {
@@ -172,6 +213,7 @@ function AdminPage() {
           <TabsTrigger value="subs">Subscribers</TabsTrigger>
           <TabsTrigger value="promos">Promos</TabsTrigger>
           <TabsTrigger value="grant">Grant</TabsTrigger>
+          <TabsTrigger value="restaurants">Restaurants</TabsTrigger>
           <TabsTrigger value="announce">Announce</TabsTrigger>
           <TabsTrigger value="audit">Audit</TabsTrigger>
         </TabsList>
@@ -202,6 +244,9 @@ function AdminPage() {
         </TabsContent>
         <TabsContent value="grant" className="mt-4">
           <GrantTab />
+        </TabsContent>
+        <TabsContent value="restaurants" className="mt-4">
+          <ManagedRestaurantsTab />
         </TabsContent>
         <TabsContent value="announce" className="mt-4">
           <AnnounceTab />

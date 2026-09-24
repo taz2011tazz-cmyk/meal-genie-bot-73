@@ -2,7 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export const RESTAURANT_PUBLIC_COLUMNS =
-  "id,slug,name,description,cuisine,logo_url,cover_image_url,food_photos,opening_hours,price_range,delivery_fee,delivery_radius_km,min_order_amount,delivery_estimate_minutes,currency,avg_rating,rating_count,is_verified,is_demo,is_accepting_orders,address,phone,whatsapp";
+  "id,slug,name,description,cuisine,logo_url,cover_url,opening_hours,minimum_order,prep_time_minutes,delivery_enabled,pickup_enabled,address,phone";
 
 export type PublicRestaurant = {
   id: string;
@@ -36,13 +36,34 @@ export const approvedRestaurantsQuery = () =>
   queryOptions({
     queryKey: ["restaurants", "approved"],
     queryFn: async (): Promise<PublicRestaurant[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("restaurants")
-        .select(`${RESTAURANT_PUBLIC_COLUMNS},restaurant_locations(latitude,longitude,label)`)
-        .eq("approval_status", "approved")
-        .order("avg_rating", { ascending: false });
+        .select(`${RESTAURANT_PUBLIC_COLUMNS},subscriptions!inner(status,expiration_date),branches(id,name,address,latitude,longitude,is_active)`)
+        .eq("onboarding_complete", true)
+        .eq("is_suspended", false)
+        .eq("subscriptions.status", "active")
+        .gt("subscriptions.expiration_date", new Date().toISOString())
+        .order("name");
       if (error) throw error;
-      return (data ?? []) as unknown as PublicRestaurant[];
+      return ((data ?? []) as any[]).map((row) => ({
+        ...row,
+        cover_image_url: row.cover_url ?? null,
+        food_photos: [],
+        price_range: null,
+        delivery_fee: 0,
+        delivery_radius_km: 0,
+        min_order_amount: Number(row.minimum_order ?? 0),
+        delivery_estimate_minutes: Number(row.prep_time_minutes ?? 30),
+        currency: "ZAR",
+        avg_rating: 0,
+        rating_count: 0,
+        is_verified: true,
+        is_demo: false,
+        is_accepting_orders: true,
+        supports_pickup: Boolean(row.pickup_enabled),
+        supports_delivery: Boolean(row.delivery_enabled),
+        restaurant_locations: (row.branches ?? []).map((branch: any) => ({ latitude: branch.latitude ?? row.latitude, longitude: branch.longitude ?? row.longitude, label: branch.name ?? branch.address ?? null })),
+      })) as PublicRestaurant[];
     },
   });
 
@@ -50,14 +71,37 @@ export const restaurantBySlugQuery = (slug: string) =>
   queryOptions({
     queryKey: ["restaurant", slug],
     queryFn: async (): Promise<PublicRestaurant | null> => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("restaurants")
-        .select(`${RESTAURANT_PUBLIC_COLUMNS},restaurant_locations(latitude,longitude,label)`)
+        .select(`${RESTAURANT_PUBLIC_COLUMNS},subscriptions!inner(status,expiration_date),branches(id,name,address,latitude,longitude,is_active)`)
         .eq("slug", slug)
-        .eq("approval_status", "approved")
+        .eq("onboarding_complete", true)
+        .eq("is_suspended", false)
+        .eq("subscriptions.status", "active")
+        .gt("subscriptions.expiration_date", new Date().toISOString())
         .maybeSingle();
       if (error) throw error;
-      return (data ?? null) as unknown as PublicRestaurant | null;
+      if (!data) return null;
+      const row: any = data;
+      return {
+        ...row,
+        cover_image_url: row.cover_url ?? null,
+        food_photos: [],
+        price_range: null,
+        delivery_fee: 0,
+        delivery_radius_km: 0,
+        min_order_amount: Number(row.minimum_order ?? 0),
+        delivery_estimate_minutes: Number(row.prep_time_minutes ?? 30),
+        currency: "ZAR",
+        avg_rating: 0,
+        rating_count: 0,
+        is_verified: true,
+        is_demo: false,
+        is_accepting_orders: true,
+        supports_pickup: Boolean(row.pickup_enabled),
+        supports_delivery: Boolean(row.delivery_enabled),
+        restaurant_locations: (row.branches ?? []).map((branch: any) => ({ latitude: branch.latitude ?? row.latitude, longitude: branch.longitude ?? row.longitude, label: branch.name ?? branch.address ?? null })),
+      } as PublicRestaurant;
     },
   });
 
@@ -80,13 +124,17 @@ export const restaurantMenuQuery = (restaurantId: string | undefined) =>
       if (!restaurantId) return [];
       const { data, error } = await supabase
         .from("menu_items")
-        .select("id,restaurant_id,name,description,image_url,price,category,is_available,sort_order")
+        .select("id,restaurant_id,name,description,image_url,price,is_available,position,menu_categories(name)")
         .eq("restaurant_id", restaurantId)
-        .eq("is_hidden", false)
-        .order("sort_order")
+        .eq("is_available", true)
+        .order("position")
         .order("name");
       if (error) throw error;
-      return (data ?? []) as PublicMenuItem[];
+      return ((data ?? []) as any[]).map((item) => ({
+        ...item,
+        category: item.menu_categories?.name ?? null,
+        sort_order: item.position ?? 0,
+      })) as PublicMenuItem[];
     },
   });
 

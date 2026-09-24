@@ -60,7 +60,7 @@ function extractJson(text: string): unknown {
 }
 
 async function callModel(prompt: string): Promise<GeneratedRecipe> {
-  const key = process.env.GROQ_API_KEY;
+  const key = process.env["GROQ_API_KEY"];
   if (!key) throw new Error("AI_NOT_CONFIGURED");
 
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -70,7 +70,7 @@ async function callModel(prompt: string): Promise<GeneratedRecipe> {
       Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
-      model: "qwen/qwen3.8-27b",
+      model: "llama-3.3-70b-versatile",
       temperature: 0.7,
       response_format: { type: "json_object" },
       messages: [

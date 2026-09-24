@@ -23,7 +23,7 @@ const CATEGORIES = [
   "Quick",
 ];
 
-type RecipeSearch = { c?: string };
+type RecipeSearch = { c?: string; q?: string };
 
 export const Route = createFileRoute("/recipes")({
   head: () => ({ meta: [
@@ -34,28 +34,35 @@ export const Route = createFileRoute("/recipes")({
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),
-  validateSearch: (search: Record<string, unknown>): RecipeSearch =>
-    typeof search["c"] === "string" ? { c: search["c"] } : {},
-  loaderDeps: ({ search }) => ({ c: search.c }),
+  validateSearch: (search: Record<string, unknown>): RecipeSearch => ({
+    ...(typeof search["c"] === "string" ? { c: search["c"] } : {}),
+    ...(typeof search["q"] === "string" ? { q: search["q"] } : {}),
+  }),
+  loaderDeps: ({ search }) => ({ c: search.c, q: search.q }),
   loader: ({ context, deps }) =>
     context.queryClient.ensureQueryData(
-      recipesByCategoryQuery(deps.c && deps.c !== "All" ? deps.c : undefined),
+      recipesByCategoryQuery(deps.c && deps.c !== "All" ? deps.c : undefined, deps.q),
     ),
   component: RecipesPage,
 });
 
 function RecipesPage() {
-  const { c } = Route.useSearch();
+  const { c, q } = Route.useSearch();
   const active = c ?? "All";
   const navigate = useNavigate();
   const { data: recipes } = useQuery(
-    recipesByCategoryQuery(active !== "All" ? active : undefined),
+    recipesByCategoryQuery(active !== "All" ? active : undefined, q),
   );
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(q ?? "");
   const [busy, setBusy] = useState(false);
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
+    if (!query.trim() || busy) return;
+    navigate({ to: "/recipes", search: { ...(active !== "All" ? { c: active } : {}), q: query.trim() } });
+  }
+
+  async function handleAiGenerate() {
     if (!query.trim() || busy) return;
     setBusy(true);
     try {
@@ -113,7 +120,10 @@ function RecipesPage() {
           />
         </div>
         <Button type="submit" size="lg" disabled={busy} className="h-12">
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Generate"}
+          Search
+        </Button>
+        <Button type="button" variant="outline" size="lg" disabled={busy} className="h-12" onClick={handleAiGenerate}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ask AI chef"}
         </Button>
         <Button
           type="button"
