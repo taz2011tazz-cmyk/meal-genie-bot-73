@@ -1,7 +1,7 @@
 import { RecipeImage } from "@/components/recipe-image";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Sparkles,
   Search,
@@ -47,8 +47,6 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  loader: ({ context }) =>
-    context.queryClient.ensureQueryData(trendingRecipesQuery()),
   component: Index,
 });
 
@@ -75,8 +73,16 @@ function Index() {
   const queryClient = useQueryClient();
   const { user } = useSession();
   const { preferences, hasPreferences } = usePreferences();
-  const { data: trendingRaw } = useSuspenseQuery(trendingRecipesQuery());
-  const { data: southAfricanRaw } = useQuery(southAfricanFavoritesQuery());
+  const {
+    data: trendingRaw = [],
+    isLoading: trendingLoading,
+    error: trendingError,
+  } = useQuery(trendingRecipesQuery());
+  const {
+    data: southAfricanRaw = [],
+    isLoading: southAfricanLoading,
+    error: southAfricanError,
+  } = useQuery(southAfricanFavoritesQuery());
   const recipeText = (r: { name: string; description?: string | null; cuisine?: string | null; category?: string | null; diet_tags?: string[] | null }) =>
     [r.name, r.description ?? null, r.cuisine ?? null, r.category ?? null, r.diet_tags ?? []];
   const trending = personalize(hasPreferences ? preferences : null, trendingRaw ?? [], recipeText);
@@ -310,7 +316,17 @@ function Index() {
           </Link>
         </div>
 
-        {trending && trending.length > 0 ? (
+        {trendingLoading ? (
+          <div className="flex gap-4 overflow-x-auto px-4 pb-1">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-40 w-40 flex-shrink-0 rounded-2xl" />
+            ))}
+          </div>
+        ) : trendingError ? (
+          <div className="mx-4 rounded-2xl border border-dashed border-border p-10 text-center">
+            <p className="text-muted-foreground">Recipes are temporarily unavailable. You can still use the rest of MealMate.</p>
+          </div>
+        ) : trending.length > 0 ? (
           <div className="flex gap-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {trending.map((r, i) => (
               <TrendingCard
@@ -322,17 +338,11 @@ function Index() {
               />
             ))}
           </div>
-        ) : trending ? (
+        ) : (
           <div className="mx-4 rounded-2xl border border-dashed border-border p-10 text-center">
             <p className="text-muted-foreground">
               No recipes yet — hit <strong>Surprise me</strong> above to create the first one!
             </p>
-          </div>
-        ) : (
-          <div className="flex gap-4 overflow-x-auto px-4 pb-1">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-40 w-40 flex-shrink-0 rounded-2xl" />
-            ))}
           </div>
         )}
       </section>
@@ -350,7 +360,15 @@ function Index() {
           </Link>
         </div>
 
-        {southAfrican && southAfrican.length > 0 ? (
+        {southAfricanLoading ? (
+          <div className="flex gap-4 overflow-x-auto px-4 pb-1">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 w-24 flex-shrink-0 rounded-2xl" />
+            ))}
+          </div>
+        ) : southAfricanError ? (
+          <p className="px-4 text-sm text-muted-foreground">This section is temporarily unavailable.</p>
+        ) : southAfrican.length > 0 ? (
           <div className="flex gap-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {southAfrican.map((r) => (
               <Link
