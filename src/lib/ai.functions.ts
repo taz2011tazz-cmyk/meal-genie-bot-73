@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { generateObject, gateway } from "ai";
 import { z } from "zod";
 import { slugify } from "@/lib/slug";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -60,34 +61,19 @@ function extractJson(text: string): unknown {
 }
 
 async function callModel(prompt: string): Promise<GeneratedRecipe> {
-  const key = process.env.GROQ_API_KEY;
-  if (!key) throw new Error("AI_NOT_CONFIGURED");
-
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    },
-    body: JSON.stringify({
-      model: "qwen/qwen3.8-27b",
+  try {
+    const { object } = await generateObject({
+      model: gateway("openai/gpt-oss-120b"),
+      schema: RecipeSchema,
+      system: SYSTEM,
+      prompt,
       temperature: 0.7,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: SYSTEM },
-        { role: "user", content: prompt },
-      ],
-    }),
-  });
-
-  if (!res.ok) {
-    console.error(`[MealMate AI] Groq request failed with status ${res.status}`);
+    });
+    return object;
+  } catch (error) {
+    console.error("[MealMate AI] AI Gateway recipe generation failed", error instanceof Error ? error.name : "unknown");
     throw new Error("AI_REQUEST_FAILED");
   }
-
-  const j = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-  const text = j.choices?.[0]?.message?.content ?? "{}";
-  return RecipeSchema.parse(extractJson(text));
 }
 
 function imageUrlFor(r: GeneratedRecipe): string {
