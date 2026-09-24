@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-export type ThemeMode = "light" | "dark" | "fun" | "system";
-export type ResolvedTheme = "light" | "dark" | "fun";
+export type ThemeMode = "light" | "dark" | "system";
+export type ResolvedTheme = "light" | "dark";
 
 const STORAGE_KEY = "mealmate-theme";
 
@@ -20,9 +20,7 @@ function systemPref(): ResolvedTheme {
 
 function applyTheme(resolved: ResolvedTheme) {
   const root = document.documentElement;
-  root.classList.remove("dark", "fun");
-  if (resolved === "dark") root.classList.add("dark");
-  if (resolved === "fun") root.classList.add("fun");
+  root.classList.toggle("dark", resolved === "dark");
   root.dataset["theme"] = resolved;
 }
 
@@ -34,7 +32,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
     const initial: ThemeMode =
-      stored === "light" || stored === "dark" || stored === "fun" || stored === "system"
+      stored === "light" || stored === "dark" || stored === "system"
         ? stored
         : "system";
     setModeState(initial);

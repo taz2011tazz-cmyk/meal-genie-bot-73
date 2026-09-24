@@ -57,7 +57,7 @@ function ResetPasswordPage() {
       toast.success("Password updated. You're signed in.");
       navigate({ to: "/", replace: true });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not update password");
+      toast.error("Could not update your password. Please request a new reset link and try again.");
     } finally {
       setBusy(false);
     }

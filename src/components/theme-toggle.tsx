@@ -1,4 +1,4 @@
-import { Sun, Moon, Sparkles, Monitor, Check } from "lucide-react";
+import { Sun, Moon, Monitor, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,14 +11,13 @@ import { useTheme, type ThemeMode } from "@/components/theme-provider";
 const OPTIONS: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
   { value: "light", label: "Light", icon: Sun },
   { value: "dark", label: "Dark", icon: Moon },
-  { value: "fun", label: "Fun", icon: Sparkles },
   { value: "system", label: "System", icon: Monitor },
 ];
 
 export function ThemeToggle() {
   const { mode, resolved, setMode } = useTheme();
   const Icon =
-    resolved === "dark" ? Moon : resolved === "fun" ? Sparkles : Sun;
+    resolved === "dark" ? Moon : Sun;
 
   return (
     <DropdownMenu>

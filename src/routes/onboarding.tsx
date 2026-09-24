@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Check, Plus, Sparkles, X } from "lucide-react";
 import { Mascot } from "@/components/mascot";
+import { MealMateLogo } from "@/components/mealmate-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePreferences } from "@/hooks/use-preferences";
@@ -160,6 +161,9 @@ function OnboardingPage() {
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
 
+  const leaving = useRef(false);
+  const finishing = useRef(false);
+
   const step = STEPS[index]!;
   const total = STEPS.length;
   const progress = useMemo(() => ((index + 1) / total) * 100, [index, total]);
@@ -179,21 +183,35 @@ function OnboardingPage() {
     setIndex(index - 1);
   }
 
-  async function finish() {
-    if (busy) return;
+  const finish = useCallback(async () => {
+    if (finishing.current) return;
+    finishing.current = true;
     setBusy(true);
-    await save({ ...draft, onboarding_completed: true });
-    setBusy(false);
-    setDone(true);
-  }
+    try {
+      await save({ ...draft, onboarding_completed: true });
+      setDone(true);
+    } finally {
+      finishing.current = false;
+      setBusy(false);
+    }
+  }, [draft, save]);
 
   function skipSetup() {
+    if (leaving.current) return;
+    leaving.current = true;
     markOnboardingSeen();
     navigate({ to: "/auth", replace: true });
   }
 
   if (done) {
-    return <ReadyScreen onRestart={() => { setDone(false); setIndex(0); }} />;
+    return (
+      <ReadyScreen
+        onRestart={() => {
+          setDone(false);
+          setIndex(0);
+        }}
+      />
+    );
   }
 
   const canContinue =
@@ -204,44 +222,52 @@ function OnboardingPage() {
         : true;
 
   return (
-    <main className="flex flex-1 flex-col px-4 pb-28 pt-6">
-      <header className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={back}
-          disabled={index === 0}
-          aria-label="Previous question"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-foreground transition-opacity disabled:opacity-30"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <div className="flex-1">
-          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out"
-              style={{ width: `${progress}%` }}
-            />
+    <main className="fixed inset-0 z-[60] flex flex-col overflow-hidden overscroll-none bg-background px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
+      <div className="mx-auto flex h-full w-full max-w-md flex-col">
+        <header className="flex h-11 shrink-0 items-center justify-between">
+          <button
+            type="button"
+            onClick={back}
+            disabled={index === 0}
+            aria-label="Previous question"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-border text-foreground transition-opacity disabled:opacity-30"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <span className="text-xs font-semibold text-muted-foreground">
+            {index + 1} of {total}
+          </span>
+          <button
+            type="button"
+            onClick={skipSetup}
+            className="flex h-11 min-w-[4.5rem] items-center justify-center rounded-full bg-secondary px-4 text-sm font-semibold text-secondary-foreground active:scale-95"
+          >
+            Skip
+          </button>
+        </header>
+
+        <div className="mt-3 h-2 w-full shrink-0 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        <div className="mt-4 flex h-[52px] shrink-0 items-center gap-3">
+          <MealMateLogo imageClassName="size-10" className="shrink-0" />
+          <div className="h-[52px] w-[52px] shrink-0">
+            <Mascot size={52} mood="happy" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="truncate font-display text-2xl leading-tight">Let's get to know you 🍽️</h1>
+            <p className="truncate text-xs text-muted-foreground">A few quick taps and MealMate is yours.</p>
           </div>
         </div>
-        <span className="text-xs font-semibold text-muted-foreground">
-          {index + 1} of {total}
-        </span>
-      </header>
-
-      <div className="mt-6 flex items-center gap-3">
-        <Mascot size={52} mood="happy" />
-        <div>
-          <h1 className="font-display text-2xl leading-tight">Let's get to know you 🍽️</h1>
-          <p className="text-xs text-muted-foreground">
-            A few quick taps and MealMate is yours.
-          </p>
-        </div>
-      </div>
 
       <section
         key={index}
         className={cn(
-          "mt-6 flex-1 rounded-3xl border border-border bg-card p-5 shadow-sm",
+          "mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-3xl border border-border bg-card p-5 shadow-sm",
           direction === "forward" ? "step-in-right" : "step-in-left",
         )}
       >
@@ -350,6 +376,7 @@ function OnboardingPage() {
           </button>
         </div>
       </div>
+      </div>
     </main>
   );
 }
@@ -404,7 +431,7 @@ function TokenField({
           value={term}
           onChange={(e) => setTerm(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229) {
               e.preventDefault();
               add(term);
             }
@@ -442,20 +469,24 @@ function TokenField({
 
 function ReadyScreen({ onRestart }: { onRestart: () => void }) {
   const navigate = useNavigate();
+  const leaving = useRef(false);
+
+  function goToAuth() {
+    if (leaving.current) return;
+    leaving.current = true;
+    navigate({ to: "/auth", replace: true });
+  }
+
   return (
-    <main className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
+    <main className="fixed inset-0 z-[60] flex flex-col items-center justify-center overflow-hidden overscroll-none bg-background px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] text-center">
       <div className="step-in-right w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-sm">
         <Mascot size={88} mood="celebrate" className="mx-auto" />
         <h1 className="mt-4 font-display text-3xl">Your MealMate is ready 🍽️</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Based on your answers, we'll personalize your meals, recipes, restaurants and
-          recommendations.
+          Based on your answers, we&apos;ll personalize your meals, recipes, restaurants and recommendations.
         </p>
         <div className="mt-6 space-y-2">
-          <Button
-            className="h-12 w-full rounded-2xl text-base font-semibold"
-            onClick={() => navigate({ to: "/auth", replace: true })}
-          >
+          <Button className="h-12 w-full rounded-2xl text-base font-semibold" onClick={goToAuth}>
             <Sparkles className="mr-2 h-4 w-4" /> Create my account
           </Button>
           <Button variant="outline" className="h-12 w-full rounded-2xl" onClick={onRestart}>
