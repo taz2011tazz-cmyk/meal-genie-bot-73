@@ -59,7 +59,7 @@ function AuthPage() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: getAuthRedirectUrl("/auth") },
+        options: { redirectTo: getAuthRedirectUrl("/auth/callback") },
       });
       if (error) throw error;
     } catch (err) {
@@ -84,7 +84,7 @@ function AuthPage() {
           email: normalizedEmail,
           password,
           options: {
-            emailRedirectTo: getAuthRedirectUrl("/auth"),
+            emailRedirectTo: getAuthRedirectUrl("/auth/callback"),
             data: { display_name: displayName || email.split("@")[0] },
           },
         });

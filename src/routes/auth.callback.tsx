@@ -1,0 +1,47 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+export const Route = createFileRoute("/auth/callback")({
+  component: AuthCallbackPage,
+});
+
+function AuthCallbackPage() {
+  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get("code");
+    if (!code) {
+      setError("The sign-in link is missing or expired.");
+      return;
+    }
+
+    supabase.auth.exchangeCodeForSession(code).then(({ error: exchangeError }) => {
+      if (exchangeError) {
+        setError("Google sign-in could not be completed. Please try again.");
+        return;
+      }
+      void navigate({ to: "/", replace: true });
+    });
+  }, [navigate]);
+
+  return (
+    <main className="flex flex-1 items-center justify-center px-6 py-20 text-center">
+      {error ? (
+        <div className="space-y-4">
+          <p className="text-sm text-destructive">{error}</p>
+          <button className="text-sm underline" onClick={() => void navigate({ to: "/auth", replace: true })}>
+            Return to sign in
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Completing sign-in…
+        </div>
+      )}
+    </main>
+  );
+}
