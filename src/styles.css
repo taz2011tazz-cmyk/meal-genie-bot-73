@@ -226,7 +226,9 @@
   body {
   height: 100%;
   overflow: hidden;
+  contain: layout style;
   overscroll-behavior-y: none;
+  text-rendering: optimizeSpeed;
   background-color: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
