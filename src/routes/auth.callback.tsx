@@ -1,53 +1,29 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/auth/callback")({
-  component: AuthCallbackPage,
-});
+export const Route = createFileRoute("/auth/callback")({ component: AuthCallback });
 
-function AuthCallbackPage() {
+function AuthCallback() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const errorDescription = params.get("error_description");
     const code = params.get("code");
-    if (errorDescription) {
-      setError(decodeURIComponent(errorDescription.replace(/\+/g, " ")));
-      return;
-    }
     if (!code) {
       setError("The sign-in link is missing or expired.");
       return;
     }
-
     supabase.auth.exchangeCodeForSession(code).then(({ error: exchangeError }) => {
       if (exchangeError) {
-        setError("Google sign-in could not be completed. Please try again.");
+        setError("The sign-in link is invalid or expired.");
         return;
       }
       void navigate({ to: "/", replace: true });
     });
   }, [navigate]);
 
-  return (
-    <main className="flex flex-1 items-center justify-center px-6 py-20 text-center">
-      {error ? (
-        <div className="space-y-4">
-          <p className="text-sm text-destructive">{error}</p>
-          <button className="text-sm underline" onClick={() => void navigate({ to: "/auth", replace: true })}>
-            Return to sign in
-          </button>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Completing sign-in…
-        </div>
-      )}
-    </main>
-  );
+  if (error) return <main className="mx-auto flex min-h-screen max-w-md items-center justify-center p-6"><p className="text-center text-sm text-destructive">{error}</p></main>;
+  return <main className="mx-auto flex min-h-screen max-w-md items-center justify-center p-6"><p className="text-sm text-muted-foreground">Completing sign-in…</p></main>;
 }
