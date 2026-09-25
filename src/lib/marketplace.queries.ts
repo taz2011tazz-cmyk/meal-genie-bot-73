@@ -81,7 +81,7 @@ export const marketplaceFeedQuery = () =>
       const [restaurantsRes, promotionsRes, dishesRes] = await Promise.all([
         hub
           .from("restaurants")
-          .select(`${RESTAURANT_COLUMNS},subscriptions!inner(status,expiration_date),branches(id,name,address,latitude,longitude,is_active)`)
+          .select(`${RESTAURANT_COLUMNS},subscriptions!inner(status,expiration_date),branches(id,name,address,is_active)`)
           .eq("is_suspended", false)
           .eq("onboarding_complete", true)
           .eq("subscriptions.status", "active")
@@ -90,7 +90,7 @@ export const marketplaceFeedQuery = () =>
           .limit(60),
         hub
           .from("promotions")
-          .select("id,restaurant_id,code,title,description,kind,value,min_order_amount,max_discount_amount,starts_at,ends_at,is_active")
+          .select("id,restaurant_id,name,description,type,value,minimum_order,starts_at,ends_at,is_active")
           .eq("is_active", true)
           .limit(60),
         hub
@@ -105,7 +105,7 @@ export const marketplaceFeedQuery = () =>
       if (dishesRes.error) throw dishesRes.error;
 
       const now = Date.now();
-      const promotions = ((promotionsRes.data ?? []) as FeedPromotion[]).filter((p) => {
+      const promotions = ((promotionsRes.data ?? []) as any[]).map((p) => ({ ...p, title: p.name, code: null, kind: p.type, min_order_amount: Number(p.minimum_order ?? 0), max_discount_amount: null, value: Number(p.value ?? 0) })).filter((p) => {
         const startsOk = !p.starts_at || new Date(p.starts_at).getTime() <= now;
         const endsOk = !p.ends_at || new Date(p.ends_at).getTime() >= now;
         return startsOk && endsOk;
@@ -129,8 +129,8 @@ export const marketplaceFeedQuery = () =>
           supports_pickup: Boolean(row.pickup_enabled),
           supports_delivery: Boolean(row.delivery_enabled),
           restaurant_locations: (row.branches ?? []).map((branch: any) => ({
-            latitude: branch.latitude ?? row.latitude,
-            longitude: branch.longitude ?? row.longitude,
+            latitude: Number(row.latitude ?? 0),
+            longitude: Number(row.longitude ?? 0),
             label: branch.name ?? branch.address ?? null,
           })),
         })) as FeedRestaurant[],
