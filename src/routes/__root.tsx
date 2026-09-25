@@ -177,6 +177,11 @@ function RootComponent() {
   }, [pathname, router, user]);
 
   useEffect(() => {
+    if (pathname !== "/onboarding" || shouldOfferOnboarding()) return;
+    void router.navigate({ to: "/", replace: true });
+  }, [pathname, router]);
+
+  useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED")
         return;

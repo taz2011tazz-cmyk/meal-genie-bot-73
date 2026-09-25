@@ -189,6 +189,7 @@ function OnboardingPage() {
     setBusy(true);
     try {
       await save({ ...draft, onboarding_completed: true });
+      markOnboardingSeen();
       setDone(true);
     } finally {
       finishing.current = false;
