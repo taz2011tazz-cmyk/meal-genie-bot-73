@@ -57,11 +57,17 @@ function AuthPage() {
     if (busy) return;
     setBusy(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: getAuthRedirectUrl("/auth/callback") },
+        options: {
+          redirectTo: getAuthRedirectUrl("/auth/callback"),
+          skipBrowserRedirect: true,
+        },
       });
       if (error) throw error;
+      if (!data.url) throw new Error("Google sign-in did not return a provider URL.");
+      // Google blocks OAuth inside the v0 preview iframe. Navigate the top-level window.
+      window.top?.location.assign(data.url);
     } catch (err) {
       console.error("[Auth] Google sign-in error:", err);
       toast.error(extractErrorMessage(err, "Google sign-in is unavailable. Please use email and password."));

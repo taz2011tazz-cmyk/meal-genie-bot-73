@@ -12,7 +12,13 @@ function AuthCallbackPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get("code");
+    const params = new URLSearchParams(window.location.search);
+    const errorDescription = params.get("error_description");
+    const code = params.get("code");
+    if (errorDescription) {
+      setError(decodeURIComponent(errorDescription.replace(/\+/g, " ")));
+      return;
+    }
     if (!code) {
       setError("The sign-in link is missing or expired.");
       return;
