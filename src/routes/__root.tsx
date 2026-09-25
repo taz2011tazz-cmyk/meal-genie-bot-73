@@ -129,8 +129,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "preconnect", href: "https://image.pollinations.ai" },
-      // Only the weights actually used (400 body, 600 medium emphasis, 700 bold)
+           // Only the weights actually used (400 body, 600 medium emphasis, 700 bold)
       // plus the upright serif display face. swap keeps text visible immediately.
       {
         rel: "stylesheet",

@@ -91,19 +91,10 @@ async function callModel(prompt: string): Promise<GeneratedRecipe> {
   return RecipeSchema.parse(extractJson(text));
 }
 
-function imageUrlFor(r: GeneratedRecipe): string {
+function imageUrlFor(r: GeneratedRecipe): string | null {
   const curated = curatedRecipeImageUrl({ slug: slugify(r.name), name: r.name }, "hero");
   if (curated) return curated;
-  const base = r.image_prompt || `${r.name}${r.country ? `, traditional ${r.country} dish` : ""}`;
-  const prompt =
-    `Authentic ${r.name}${r.cuisine ? ` from ${r.cuisine} cuisine` : ""}. ` +
-    `${base}. Real photograph, hyperrealistic food photography, DSLR, 50mm, ` +
-    `natural window light, shallow depth of field, plated on real crockery, ` +
-    `not an illustration, not cartoon, not 3d render, photorealistic.`;
-  // Deterministic seed per dish name so the same recipe always shows the same photo.
-  let seed = 0;
-  for (let i = 0; i < r.name.length; i++) seed = (seed * 31 + r.name.charCodeAt(i)) >>> 0;
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1200&height=800&nologo=true&model=flux&seed=${seed}`;
+  return curatedRecipeImageUrl({ slug: slugify(r.name), name: r.name }, "hero") ?? null;
 }
 
 function toDbRecipe(r: GeneratedRecipe, userId: string | null) {

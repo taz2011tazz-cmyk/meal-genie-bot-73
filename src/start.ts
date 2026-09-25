@@ -20,7 +20,7 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
 
 // Add hardening headers (HSTS, XFO, XCTO, Referrer-Policy, Permissions-Policy, CSP)
 // to every server response. CSP is intentionally permissive for third-party image hosts
-// (Pollinations, Supabase Storage, Unsplash) and the Lovable AI gateway.
+// (Lovable recipe assets, Supabase Storage, Unsplash) and the AI gateway.
 const securityHeadersMiddleware = createMiddleware().server(async ({ next }) => {
   const result = await next();
   // `next()` may return a Response OR a framework result object (e.g. { response, context }).

@@ -106,13 +106,9 @@ export function curatedRecipeImageUrl(
   return null;
 }
 
-/** Deterministic generated photo for a recipe with no stored image. */
-export function generatedImageUrl(r: ImageRecipeLike, size: ImageSize = "card"): string {
-  const { width, height } = IMAGE_DIMENSIONS[size];
-  const seed = hashSeed(r.slug || r.name);
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(
-    dishPrompt(r),
-  )}?width=${width}&height=${height}&nologo=true&model=flux&seed=${seed}`;
+/** Lovable's curated category image for recipes without a dedicated asset. */
+export function generatedImageUrl(r: ImageRecipeLike, _size: ImageSize = "card"): string {
+  return categoryFallbackUrl(r);
 }
 
 /**
@@ -123,22 +119,7 @@ export function generatedImageUrl(r: ImageRecipeLike, size: ImageSize = "card"):
 export function recipeImageUrl(r: ImageRecipeLike, size: ImageSize = "card"): string {
   const curated = curatedRecipeImageUrl(r, size);
   if (curated) return curated;
-  const stored = r.image_url?.trim();
-  if (!stored) return generatedImageUrl(r, size);
-  if (!stored.includes("image.pollinations.ai")) return stored;
-  const { width, height } = IMAGE_DIMENSIONS[size];
-  try {
-    const url = new URL(stored);
-    url.searchParams.set("width", String(width));
-    url.searchParams.set("height", String(height));
-    url.searchParams.set("nologo", "true");
-    if (!url.searchParams.get("seed")) {
-      url.searchParams.set("seed", String(hashSeed(r.slug || r.name)));
-    }
-    return url.toString();
-  } catch {
-    return stored;
-  }
+  return categoryFallbackUrl(r);
 }
 
 /**
@@ -170,7 +151,7 @@ export function imageFallback(r: ImageRecipeLike, size: ImageSize = "card") {
     const step = img.dataset["fallback"] ?? "0";
     if (step === "0") {
       img.dataset["fallback"] = "1";
-      img.src = curatedRecipeImageUrl(r, size) ?? generatedImageUrl(r, size);
+      img.src = curatedRecipeImageUrl(r, size) ?? categoryFallbackUrl(r);
       return;
     }
     if (step === "1") {
