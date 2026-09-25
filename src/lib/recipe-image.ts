@@ -73,13 +73,37 @@ export const IMAGE_DIMENSIONS: Record<ImageSize, { width: number; height: number
 };
 
 /** Returns an audited, CDN-hosted photo for the recipes bundled with MealMate. */
+const CURATED_ALIASES: Record<string, string> = {
+  bobotie: "cape-malay-bobotie",
+  "cape-malay-bobotie": "cape-malay-bobotie",
+  chakalaka: "chakalaka-with-pap",
+  "chakalaka-with-pap": "chakalaka-with-pap",
+  "chakalaka-with-pap-mealmate": "chakalaka-with-pap",
+  "bunny-chow": "chicken-bunny-chow",
+  "chicken-bunny-chow": "chicken-bunny-chow",
+  "kota": "kota-south-african-spatlo-7rwhl",
+  "kota-south-african-spatlo": "kota-south-african-spatlo-7rwhl",
+  "malva-pudding": "malva-pudding",
+  "malva-pudding-mealmate": "malva-pudding",
+  "jollof-rice": "west-african-jollof-rice",
+  "west-african-jollof-rice": "west-african-jollof-rice",
+};
+
+function curatedKey(value: string): string {
+  const normalized = value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return CURATED_ALIASES[normalized] ?? normalized;
+}
+
 export function curatedRecipeImageUrl(
-  r: Pick<ImageRecipeLike, "slug">,
+  r: Pick<ImageRecipeLike, "slug" | "name">,
   size: ImageSize = "card",
 ): string | null {
-  const slug = r.slug?.trim();
-  if (!slug) return null;
-  return RECIPE_PHOTOS[slug]?.[size] ?? null;
+  const candidates = [r.slug, r.name].filter((value): value is string => Boolean(value?.trim()));
+  for (const candidate of candidates) {
+    const photo = RECIPE_PHOTOS[curatedKey(candidate)];
+    if (photo) return photo[size];
+  }
+  return null;
 }
 
 /** Deterministic generated photo for a recipe with no stored image. */

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { slugify } from "@/lib/slug";
+import { curatedRecipeImageUrl } from "@/lib/recipe-image";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { enforceRateLimit, auditLog, trackEvent } from "@/lib/security.server";
 
@@ -91,6 +92,8 @@ async function callModel(prompt: string): Promise<GeneratedRecipe> {
 }
 
 function imageUrlFor(r: GeneratedRecipe): string {
+  const curated = curatedRecipeImageUrl({ slug: slugify(r.name), name: r.name }, "hero");
+  if (curated) return curated;
   const base = r.image_prompt || `${r.name}${r.country ? `, traditional ${r.country} dish` : ""}`;
   const prompt =
     `Authentic ${r.name}${r.cuisine ? ` from ${r.cuisine} cuisine` : ""}. ` +
