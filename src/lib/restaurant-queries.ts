@@ -38,7 +38,7 @@ export const approvedRestaurantsQuery = () =>
     queryFn: async (): Promise<PublicRestaurant[]> => {
       const { data, error } = await (supabase as any)
         .from("restaurants")
-        .select(`${RESTAURANT_PUBLIC_COLUMNS},subscriptions!inner(status,expiration_date),branches(id,name,address,latitude,longitude,is_active)`)
+        .select(`${RESTAURANT_PUBLIC_COLUMNS},subscriptions!inner(status,expiration_date),branches(id,name,address,is_active)`)
         .eq("onboarding_complete", true)
         .eq("is_suspended", false)
         .eq("subscriptions.status", "active")
@@ -62,7 +62,7 @@ export const approvedRestaurantsQuery = () =>
         is_accepting_orders: true,
         supports_pickup: Boolean(row.pickup_enabled),
         supports_delivery: Boolean(row.delivery_enabled),
-        restaurant_locations: (row.branches ?? []).map((branch: any) => ({ latitude: branch.latitude ?? row.latitude, longitude: branch.longitude ?? row.longitude, label: branch.name ?? branch.address ?? null })),
+        restaurant_locations: (row.branches ?? []).map((branch: any) => ({ latitude: Number(row.latitude ?? 0), longitude: Number(row.longitude ?? 0), label: branch.name ?? branch.address ?? null })),
       })) as PublicRestaurant[];
     },
   });
@@ -73,7 +73,7 @@ export const restaurantBySlugQuery = (slug: string) =>
     queryFn: async (): Promise<PublicRestaurant | null> => {
       const { data, error } = await (supabase as any)
         .from("restaurants")
-        .select(`${RESTAURANT_PUBLIC_COLUMNS},subscriptions!inner(status,expiration_date),branches(id,name,address,latitude,longitude,is_active)`)
+        .select(`${RESTAURANT_PUBLIC_COLUMNS},subscriptions!inner(status,expiration_date),branches(id,name,address,is_active)`)
         .eq("slug", slug)
         .eq("onboarding_complete", true)
         .eq("is_suspended", false)
@@ -100,7 +100,7 @@ export const restaurantBySlugQuery = (slug: string) =>
         is_accepting_orders: true,
         supports_pickup: Boolean(row.pickup_enabled),
         supports_delivery: Boolean(row.delivery_enabled),
-        restaurant_locations: (row.branches ?? []).map((branch: any) => ({ latitude: branch.latitude ?? row.latitude, longitude: branch.longitude ?? row.longitude, label: branch.name ?? branch.address ?? null })),
+        restaurant_locations: (row.branches ?? []).map((branch: any) => ({ latitude: Number(row.latitude ?? 0), longitude: Number(row.longitude ?? 0), label: branch.name ?? branch.address ?? null })),
       } as PublicRestaurant;
     },
   });

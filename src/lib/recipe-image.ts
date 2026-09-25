@@ -73,22 +73,42 @@ export const IMAGE_DIMENSIONS: Record<ImageSize, { width: number; height: number
 };
 
 /** Returns an audited, CDN-hosted photo for the recipes bundled with MealMate. */
-export function curatedRecipeImageUrl(
-  r: Pick<ImageRecipeLike, "slug">,
-  size: ImageSize = "card",
-): string | null {
-  const slug = r.slug?.trim();
-  if (!slug) return null;
-  return RECIPE_PHOTOS[slug]?.[size] ?? null;
+const CURATED_ALIASES: Record<string, string> = {
+  bobotie: "cape-malay-bobotie",
+  "cape-malay-bobotie": "cape-malay-bobotie",
+  chakalaka: "chakalaka-with-pap",
+  "chakalaka-with-pap": "chakalaka-with-pap",
+  "chakalaka-with-pap-mealmate": "chakalaka-with-pap",
+  "bunny-chow": "chicken-bunny-chow",
+  "chicken-bunny-chow": "chicken-bunny-chow",
+  "kota": "kota-south-african-spatlo-7rwhl",
+  "kota-south-african-spatlo": "kota-south-african-spatlo-7rwhl",
+  "malva-pudding": "malva-pudding",
+  "malva-pudding-mealmate": "malva-pudding",
+  "jollof-rice": "west-african-jollof-rice",
+  "west-african-jollof-rice": "west-african-jollof-rice",
+};
+
+function curatedKey(value: string): string {
+  const normalized = value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return CURATED_ALIASES[normalized] ?? normalized;
 }
 
-/** Deterministic generated photo for a recipe with no stored image. */
-export function generatedImageUrl(r: ImageRecipeLike, size: ImageSize = "card"): string {
-  const { width, height } = IMAGE_DIMENSIONS[size];
-  const seed = hashSeed(r.slug || r.name);
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(
-    dishPrompt(r),
-  )}?width=${width}&height=${height}&nologo=true&model=flux&seed=${seed}`;
+export function curatedRecipeImageUrl(
+  r: Pick<ImageRecipeLike, "slug" | "name">,
+  size: ImageSize = "card",
+): string | null {
+  const candidates = [r.slug, r.name].filter((value): value is string => Boolean(value?.trim()));
+  for (const candidate of candidates) {
+    const photo = RECIPE_PHOTOS[curatedKey(candidate)];
+    if (photo) return photo[size];
+  }
+  return null;
+}
+
+/** Lovable's curated category image for recipes without a dedicated asset. */
+export function generatedImageUrl(r: ImageRecipeLike, _size: ImageSize = "card"): string {
+  return categoryFallbackUrl(r);
 }
 
 /**
@@ -99,22 +119,7 @@ export function generatedImageUrl(r: ImageRecipeLike, size: ImageSize = "card"):
 export function recipeImageUrl(r: ImageRecipeLike, size: ImageSize = "card"): string {
   const curated = curatedRecipeImageUrl(r, size);
   if (curated) return curated;
-  const stored = r.image_url?.trim();
-  if (!stored) return generatedImageUrl(r, size);
-  if (!stored.includes("image.pollinations.ai")) return stored;
-  const { width, height } = IMAGE_DIMENSIONS[size];
-  try {
-    const url = new URL(stored);
-    url.searchParams.set("width", String(width));
-    url.searchParams.set("height", String(height));
-    url.searchParams.set("nologo", "true");
-    if (!url.searchParams.get("seed")) {
-      url.searchParams.set("seed", String(hashSeed(r.slug || r.name)));
-    }
-    return url.toString();
-  } catch {
-    return stored;
-  }
+  return categoryFallbackUrl(r);
 }
 
 /**
@@ -146,7 +151,7 @@ export function imageFallback(r: ImageRecipeLike, size: ImageSize = "card") {
     const step = img.dataset["fallback"] ?? "0";
     if (step === "0") {
       img.dataset["fallback"] = "1";
-      img.src = curatedRecipeImageUrl(r, size) ?? generatedImageUrl(r, size);
+      img.src = curatedRecipeImageUrl(r, size) ?? categoryFallbackUrl(r);
       return;
     }
     if (step === "1") {

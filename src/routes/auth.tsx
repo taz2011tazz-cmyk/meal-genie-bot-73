@@ -53,6 +53,28 @@ function AuthPage() {
     if (!loading && user) navigate({ to: "/", replace: true });
   }, [user, loading, navigate]);
 
+  async function signInWithGoogle() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: getAuthRedirectUrl("/auth/callback"),
+          skipBrowserRedirect: true,
+        },
+      });
+      if (error) throw error;
+      if (!data.url) throw new Error("Google sign-in did not return a provider URL.");
+      // Google blocks OAuth inside the v0 preview iframe. Navigate the top-level window.
+      window.top?.location.assign(data.url);
+    } catch (err) {
+      console.error("[Auth] Google sign-in error:", err);
+      toast.error(extractErrorMessage(err, "Google sign-in is unavailable. Please use email and password."));
+      setBusy(false);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (busy) return;
@@ -68,7 +90,7 @@ function AuthPage() {
           email: normalizedEmail,
           password,
           options: {
-            emailRedirectTo: getAuthRedirectUrl("/auth"),
+            emailRedirectTo: getAuthRedirectUrl("/auth/callback"),
             data: { display_name: displayName || email.split("@")[0] },
           },
         });
@@ -160,6 +182,14 @@ function AuthPage() {
             ) : (
               "Create account"
             )}
+          </Button>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="h-px flex-1 bg-border" />
+            OR
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <Button type="button" variant="outline" className="w-full" disabled={busy} onClick={signInWithGoogle}>
+            Continue with Google
           </Button>
           {mode === "signin" && (
             <button

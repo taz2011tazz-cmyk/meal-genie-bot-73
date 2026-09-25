@@ -18,10 +18,18 @@ function systemPref(): ResolvedTheme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+const DARK_APP_ICON = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/file_00000000a36c81f8b4fffeafdc65d6a2-FOrsF6KRQeSU2lpiLAhmNK89JDZVeZ.png";
+const LIGHT_APP_ICON = "/favicon.png";
+
 function applyTheme(resolved: ResolvedTheme) {
   const root = document.documentElement;
   root.classList.toggle("dark", resolved === "dark");
   root.dataset["theme"] = resolved;
+  const icon = resolved === "dark" ? DARK_APP_ICON : LIGHT_APP_ICON;
+  for (const rel of ["icon", "apple-touch-icon"]) {
+    const link = document.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+    if (link) link.href = icon;
+  }
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

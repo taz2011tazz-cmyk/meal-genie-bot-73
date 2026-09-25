@@ -46,7 +46,7 @@ export function TrendingCard({
       <Link
         to="/recipe/$slug"
         params={{ slug: recipe.slug }}
-        className="group relative block aspect-square w-40 overflow-hidden rounded-2xl bg-muted"
+        className="md3-surface group relative block aspect-square w-40 overflow-hidden rounded-2xl bg-muted"
       >
         <RecipeImage
           recipe={recipe}
@@ -107,7 +107,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
     <Link
       to="/recipe/$slug"
       params={{ slug: recipe.slug }}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:shadow-lg"
+      className="md3-surface group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:shadow-lg"
     >
       <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
         <RecipeImage

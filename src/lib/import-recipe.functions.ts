@@ -89,13 +89,7 @@ async function scrapeMeta(url: string): Promise<string> {
 }
 
 function imageUrlFor(name: string, imagePrompt: string | null | undefined) {
-  const prompt =
-    `${imagePrompt || name}. Real photograph, hyperrealistic food photography, ` +
-    `DSLR, 50mm, natural window light, shallow depth of field, ` +
-    `plated on real crockery, photorealistic.`;
-  let seed = 0;
-  for (let i = 0; i < name.length; i++) seed = (seed * 31 + name.charCodeAt(i)) >>> 0;
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1200&height=800&nologo=true&model=flux&seed=${seed}`;
+  return null;
 }
 
 export const importRecipeFromUrl = createServerFn({ method: "POST" })

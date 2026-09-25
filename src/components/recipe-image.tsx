@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   categoryFallbackUrl,
   curatedRecipeImageUrl,
-  recipeImageUrl,
   IMAGE_DIMENSIONS,
   type ImageRecipeLike,
   type ImageSize,
@@ -30,35 +29,12 @@ export function RecipeImage({
   alt?: string;
 }) {
   const curated = curatedRecipeImageUrl(recipe, size);
-  const remote = recipeImageUrl(recipe, size);
   const fallback = categoryFallbackUrl(recipe);
   const [src, setSrc] = useState(curated ?? fallback);
 
   useEffect(() => {
-    if (curated) {
-      setSrc(curated);
-      return;
-    }
-    setSrc(fallback);
-    if (!remote || remote === fallback) return;
-    let cancelled = false;
-    const probe = new Image();
-    const timer = window.setTimeout(() => {
-      cancelled = true;
-    }, 12000);
-    probe.onload = () => {
-      if (!cancelled) setSrc(remote);
-      window.clearTimeout(timer);
-    };
-    probe.onerror = () => window.clearTimeout(timer);
-    probe.src = remote;
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-      probe.onload = null;
-      probe.onerror = null;
-    };
-  }, [curated, remote, fallback]);
+    setSrc(curated ?? fallback);
+  }, [curated, fallback]);
 
   return (
     <img

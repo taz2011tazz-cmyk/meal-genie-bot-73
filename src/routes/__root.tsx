@@ -124,13 +124,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "icon", href: "/favicon.png", type: "image/png", id: "app-icon" },
       { rel: "manifest", href: "/manifest.webmanifest" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180", id: "apple-touch-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "preconnect", href: "https://image.pollinations.ai" },
-      // Only the weights actually used (400 body, 600 medium emphasis, 700 bold)
+           // Only the weights actually used (400 body, 600 medium emphasis, 700 bold)
       // plus the upright serif display face. swap keeps text visible immediately.
       {
         rel: "stylesheet",
@@ -178,6 +177,11 @@ function RootComponent() {
   }, [pathname, router, user]);
 
   useEffect(() => {
+    if (pathname !== "/onboarding" || shouldOfferOnboarding()) return;
+    void router.navigate({ to: "/", replace: true });
+  }, [pathname, router]);
+
+  useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED")
         return;
@@ -201,7 +205,7 @@ function RootComponent() {
               >
                 <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col">
                   <AuthGate>
-                    <div key={pathname} className="page-enter flex flex-1 flex-col">
+                    <div key={pathname} className="page-enter motion-reveal flex flex-1 flex-col">
                       <Outlet />
                     </div>
                   </AuthGate>

@@ -30,7 +30,7 @@ import {
   adminRevokePremium,
   adminSavePromo,
 } from "@/lib/premium.functions";
-import { createManagedRestaurant } from "@/lib/managed-restaurants.functions";
+import { createManagedRestaurant, launchManagedRestaurant, listManagedRestaurants } from "@/lib/managed-restaurants.functions";
 import {
   adminListAuditLogs,
   adminListUsers,
@@ -91,10 +91,22 @@ function usePresetRange(preset: Preset, custom: { from: string; to: string }) {
 }
 
 function ManagedRestaurantsTab() {
+  const queryClient = useQueryClient();
+  const managed = useQuery({ queryKey: ["managed-restaurants"], queryFn: () => listManagedRestaurants() });
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [ownerName, setOwnerName] = useState("");
   const [busy, setBusy] = useState(false);
+
+  async function launch(restaurantId: string) {
+    try {
+      await launchManagedRestaurant({ data: { restaurantId } });
+      await queryClient.invalidateQueries({ queryKey: ["managed-restaurants"] });
+      toast.success("Restaurant launched in Consumer.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not launch restaurant.");
+    }
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -126,6 +138,15 @@ function ManagedRestaurantsTab() {
         <Input required type="email" placeholder="Owner email" value={email} onChange={(event) => setEmail(event.target.value)} />
         <Button type="submit" disabled={busy}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send invite and start trial"}</Button>
       </form>
+      <div className="mt-8 space-y-3">
+        <h3 className="font-display text-lg">Restaurants</h3>
+        {managed.isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : managed.data?.length ? managed.data.map((restaurant: any) => (
+          <div key={restaurant.id} className="flex items-center justify-between gap-4 rounded-2xl border border-border/60 p-4">
+            <div><p className="font-medium">{restaurant.name}</p><p className="text-xs text-muted-foreground">{restaurant.owner_email}</p></div>
+            <Button size="sm" disabled={restaurant.onboarding_complete} onClick={() => launch(restaurant.id)}>{restaurant.onboarding_complete ? "Launched" : "Launch"}</Button>
+          </div>
+        )) : <p className="text-sm text-muted-foreground">No managed restaurants yet.</p>}
+      </div>
     </section>
   );
 }
