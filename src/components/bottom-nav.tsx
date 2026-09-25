@@ -33,11 +33,12 @@ function Tab({
       to={to}
       aria-label={label}
       className={cn(
-        "flex flex-col items-center gap-1 rounded-xl px-2 py-2 text-[10px] font-semibold transition-colors",
+        "group relative flex flex-col items-center gap-1 rounded-xl px-2 py-2 text-[10px] font-semibold transition-colors",
         active ? "text-primary" : "text-muted-foreground hover:text-foreground",
       )}
     >
-      <Icon className="h-5 w-5" />
+      <Icon className="h-5 w-5 transition-transform duration-200 group-active:scale-90" />
+      {active && <span className="absolute inset-x-3 -top-0.5 h-0.5 rounded-full bg-primary motion-reveal" aria-hidden="true" />}
       {label}
     </Link>
   );

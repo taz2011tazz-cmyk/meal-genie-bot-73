@@ -124,9 +124,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "icon", href: "/favicon.png", type: "image/png", id: "app-icon" },
       { rel: "manifest", href: "/manifest.webmanifest" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180", id: "apple-touch-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
            // Only the weights actually used (400 body, 600 medium emphasis, 700 bold)
@@ -205,7 +205,7 @@ function RootComponent() {
               >
                 <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col">
                   <AuthGate>
-                    <div key={pathname} className="page-enter flex flex-1 flex-col">
+                    <div key={pathname} className="page-enter motion-reveal flex flex-1 flex-col">
                       <Outlet />
                     </div>
                   </AuthGate>

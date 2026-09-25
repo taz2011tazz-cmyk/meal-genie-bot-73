@@ -307,6 +307,7 @@
 }
 
 @utility md3-surface {
+  will-change: transform;
   transition: transform 180ms var(--ease-md3-standard),
               box-shadow 180ms var(--ease-md3-standard),
               background-color 180ms var(--ease-md3-standard);
@@ -321,6 +322,40 @@
 @utility rise-in {
   animation: md3-rise 320ms var(--ease-md3-decel) both;
 }
+
+@keyframes motion-fade-up {
+  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@utility motion-reveal {
+  animation: motion-fade-up 420ms var(--ease-md3-decel) both;
+  animation-delay: var(--motion-delay, 0ms);
+}
+@utility motion-stagger {
+  & > * { animation: motion-fade-up 420ms var(--ease-md3-decel) both; }
+  & > *:nth-child(1) { animation-delay: 40ms; }
+  & > *:nth-child(2) { animation-delay: 80ms; }
+  & > *:nth-child(3) { animation-delay: 120ms; }
+  & > *:nth-child(4) { animation-delay: 160ms; }
+  & > *:nth-child(5) { animation-delay: 200ms; }
+  & > *:nth-child(n+6) { animation-delay: 240ms; }
+}
+@utility motion-number {
+  display: inline-block;
+  animation: motion-number-pop 420ms var(--ease-md3-decel) both;
+}
+@keyframes motion-number-pop {
+  from { opacity: 0; transform: scale(.82); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+button, a, input, textarea, select, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+button, [role="button"] { transition: transform 160ms var(--ease-md3-standard), box-shadow 180ms var(--ease-md3-standard), background-color 180ms var(--ease-md3-standard), color 180ms var(--ease-md3-standard), border-color 180ms var(--ease-md3-standard); }
+button:not(:disabled):active, [role="button"]:active { transform: scale(.97); }
+img { transition: opacity 260ms var(--ease-md3-decel), transform 500ms var(--ease-md3-standard); }
+
 
 @keyframes md3-shimmer {
   0%   { background-position: -200% 0; }
@@ -352,5 +387,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .step-in-right,
-  .step-in-left { animation: none; }
+  .step-in-left,
+  .motion-reveal,
+  .motion-stagger > *,
+  .motion-number { animation: none; }
+  button, [role="button"], .md3-surface { transition: none; }
+  button:not(:disabled):active, [role="button"]:active { transform: none; }
 }
