@@ -61,7 +61,7 @@ export type FeedDish = {
 };
 
 const RESTAURANT_COLUMNS =
-  "id,slug,name,description,cuisine,logo_url,cover_url,opening_hours,minimum_order,prep_time_minutes,delivery_enabled,pickup_enabled,address,latitude,longitude,is_suspended,onboarding_complete";
+  "id,slug,name,description,cuisine,logo_url,cover_image_url,opening_hours,price_range,delivery_fee,delivery_radius_km,min_order_amount,delivery_estimate_minutes,currency,avg_rating,rating_count,is_verified,is_accepting_orders,paused_until,pause_message,supports_pickup,supports_delivery,address,restaurant_locations(latitude,longitude,label,is_active)";
 
 export type MarketplaceFeed = {
   restaurants: FeedRestaurant[];
@@ -69,80 +69,71 @@ export type MarketplaceFeed = {
   dishes: FeedDish[];
 };
 
-/** One round trip per table, run in parallel, then joined in memory. */
+/** One round trip per table, run in parallel. RLS limits rows to approved restaurants. */
 export const marketplaceFeedQuery = () =>
   queryOptions({
     queryKey: ["marketplace-feed"],
     staleTime: 60_000,
     queryFn: async (): Promise<MarketplaceFeed> => {
-      // Hub's production schema is newer than the generated Consumer types.
-      // Keep this adapter isolated so the rest of the Consumer model stays stable.
-      const hub = supabase as any;
       const [restaurantsRes, promotionsRes, dishesRes] = await Promise.all([
-        hub
+        supabase
           .from("restaurants")
-          .select(`${RESTAURANT_COLUMNS},subscriptions!inner(status,expiration_date),branches(id,name,address,is_active)`)
-          .eq("is_suspended", false)
-          .eq("onboarding_complete", true)
-          .eq("subscriptions.status", "active")
-          .gt("subscriptions.expiration_date", new Date().toISOString())
+          .select(RESTAURANT_COLUMNS)
+          .eq("approval_status", "approved")
           .order("name")
           .limit(60),
-        hub
-          .from("promotions")
-          .select("id,restaurant_id,name,description,type,value,minimum_order,starts_at,ends_at,is_active")
+        supabase
+          .from("restaurant_promotions")
+          .select(
+            "id,restaurant_id,code,title,description,kind,value,min_order_amount,max_discount_amount,starts_at,ends_at,is_active",
+          )
           .eq("is_active", true)
           .limit(60),
-        hub
+        supabase
           .from("menu_items")
-          .select("id,restaurant_id,name,description,image_url,price,is_available,menu_categories(name)")
+          .select("id,restaurant_id,name,description,image_url,price,category,dietary_tags,is_available")
           .eq("is_available", true)
-          .order("position")
+          .eq("is_hidden", false)
+          .order("sort_order")
           .limit(80),
       ]);
 
       if (restaurantsRes.error) throw restaurantsRes.error;
       if (dishesRes.error) throw dishesRes.error;
+      if (promotionsRes.error) console.error("[marketplace] promotions failed", promotionsRes.error);
 
       const now = Date.now();
-      const promotions = ((promotionsRes.data ?? []) as any[]).map((p) => ({ ...p, title: p.name, code: null, kind: p.type, min_order_amount: Number(p.minimum_order ?? 0), max_discount_amount: null, value: Number(p.value ?? 0) })).filter((p) => {
-        const startsOk = !p.starts_at || new Date(p.starts_at).getTime() <= now;
-        const endsOk = !p.ends_at || new Date(p.ends_at).getTime() >= now;
-        return startsOk && endsOk;
-      });
+      const promotions = ((promotionsRes.data ?? []) as any[])
+        .map((p) => ({
+          ...p,
+          value: Number(p.value ?? 0),
+          min_order_amount: Number(p.min_order_amount ?? 0),
+          max_discount_amount: p.max_discount_amount == null ? null : Number(p.max_discount_amount),
+        }))
+        .filter((p) => {
+          const startsOk = !p.starts_at || new Date(p.starts_at).getTime() <= now;
+          const endsOk = !p.ends_at || new Date(p.ends_at).getTime() >= now;
+          return startsOk && endsOk;
+        }) as FeedPromotion[];
 
       return {
-        restaurants: (restaurantsRes.data ?? []).map((row: any) => ({
+        restaurants: ((restaurantsRes.data ?? []) as any[]).map((row) => ({
           ...row,
-          cover_image_url: row.cover_url ?? null,
-          delivery_fee: 0,
-          delivery_radius_km: 0,
-          min_order_amount: Number(row.minimum_order ?? 0),
-          delivery_estimate_minutes: Number(row.prep_time_minutes ?? 30),
-          currency: "ZAR",
-          avg_rating: 0,
-          rating_count: 0,
-          is_verified: Boolean(row.onboarding_complete),
-          is_accepting_orders: !row.is_suspended,
-          paused_until: null,
-          pause_message: null,
-          supports_pickup: Boolean(row.pickup_enabled),
-          supports_delivery: Boolean(row.delivery_enabled),
-          restaurant_locations: (row.branches ?? []).map((branch: any) => ({
-            latitude: Number(row.latitude ?? 0),
-            longitude: Number(row.longitude ?? 0),
-            label: branch.name ?? branch.address ?? null,
-          })),
+          delivery_fee: Number(row.delivery_fee ?? 0),
+          delivery_radius_km: Number(row.delivery_radius_km ?? 0),
+          min_order_amount: Number(row.min_order_amount ?? 0),
+          delivery_estimate_minutes: Number(row.delivery_estimate_minutes ?? 30),
+          avg_rating: Number(row.avg_rating ?? 0),
+          rating_count: Number(row.rating_count ?? 0),
+          restaurant_locations: ((row.restaurant_locations ?? []) as any[])
+            .filter((l) => l.is_active !== false)
+            .map((l) => ({ latitude: Number(l.latitude), longitude: Number(l.longitude), label: l.label ?? null })),
         })) as FeedRestaurant[],
         promotions,
         dishes: ((dishesRes.data ?? []) as any[]).map((d) => ({
           ...d,
-          category: d.menu_categories?.name ?? null,
-          dietary_tags: [
-            ...(d.is_vegan ? ["vegan"] : []),
-            ...(d.is_vegetarian ? ["vegetarian"] : []),
-            ...(d.is_halaal ? ["halaal"] : []),
-          ],
+          price: Number(d.price ?? 0),
+          dietary_tags: d.dietary_tags ?? [],
         })) as FeedDish[],
       };
     },
@@ -156,7 +147,7 @@ export const orderHistoryRestaurantsQuery = (userId: string | undefined) =>
     queryFn: async (): Promise<string[]> => {
       if (!userId) return [];
       const { data, error } = await (supabase as any)
-        .from("orders")
+        .from("restaurant_orders")
         .select("restaurant_id,placed_at")
         .eq("customer_id", userId)
         .order("placed_at", { ascending: false })

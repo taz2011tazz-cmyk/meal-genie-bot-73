@@ -161,8 +161,8 @@ Exactly ${data.scenes} scenes, each ~5 seconds of narration, together forming a 
       const scenes = await Promise.all(
         script.scenes.slice(0, data.scenes).map(async (s) => {
           const [imageUrl, audioUrl] = await Promise.all([
-            b64Image(key, `${s.image_prompt}. ${styleSuffix}. No words or lettering in the image.`),
-            data.narration ? b64Speech(key, s.narration) : Promise.resolve(null),
+            b64Image("", `${s.image_prompt}. ${styleSuffix}. No words or lettering in the image.`),
+            data.narration ? b64Speech("", s.narration) : Promise.resolve(null),
           ]);
           return {
             heading: s.heading,
