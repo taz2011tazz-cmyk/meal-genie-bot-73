@@ -147,7 +147,7 @@ export const orderHistoryRestaurantsQuery = (userId: string | undefined) =>
     queryFn: async (): Promise<string[]> => {
       if (!userId) return [];
       const { data, error } = await (supabase as any)
-        .from("orders")
+        .from("restaurant_orders")
         .select("restaurant_id,placed_at")
         .eq("customer_id", userId)
         .order("placed_at", { ascending: false })
