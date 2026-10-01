@@ -67,7 +67,6 @@ async function callModel(prompt: string): Promise<GeneratedRecipe> {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
       model: "google/gemini-2.5-flash",
