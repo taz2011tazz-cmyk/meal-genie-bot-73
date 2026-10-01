@@ -57,17 +57,13 @@ function AuthPage() {
     if (busy) return;
     setBusy(true);
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: getAuthRedirectUrl("/auth/callback"),
-          skipBrowserRedirect: true,
-        },
+      const { lovable } = await import("@/integrations/lovable");
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
       });
-      if (error) throw error;
-      if (!data.url) throw new Error("Google sign-in did not return a provider URL.");
-      // Google blocks OAuth inside the v0 preview iframe. Navigate the top-level window.
-      window.top?.location.assign(data.url);
+      if (result.error) throw result.error;
+      if (result.redirected) return;
+      setBusy(false);
     } catch (err) {
       console.error("[Auth] Google sign-in error:", err);
       toast.error(extractErrorMessage(err, "Google sign-in is unavailable. Please use email and password."));
@@ -95,6 +91,13 @@ function AuthPage() {
           },
         });
         if (error) throw error;
+        // Supabase returns a user with no identities when the email is already registered.
+        if (data.user && (data.user.identities?.length ?? 0) === 0) {
+          toast.error("An account with this email already exists. Sign in instead.");
+          setMode("signin");
+          setPassword("");
+          return;
+        }
         // With email confirmation required, no session is returned until the user
         // clicks the verification link. Show guidance instead of navigating.
         if (!data.session) {
@@ -117,7 +120,13 @@ function AuthPage() {
           ? "Invalid email or password."
           : message.includes("email not confirmed")
             ? "Please verify your email before signing in."
-            : extractErrorMessage(err, "Authentication failed"),
+            : message.includes("already registered") || message.includes("already exists")
+              ? "An account with this email already exists. Sign in instead."
+              : message.includes("pwned") || message.includes("weak")
+                ? "That password is too weak or has appeared in a data breach. Choose another."
+                : message.includes("rate limit")
+                  ? "Too many attempts. Please wait a minute and try again."
+                  : extractErrorMessage(err, "Authentication failed"),
       );
     } finally {
       setBusy(false);
