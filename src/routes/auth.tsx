@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { MealMateLogo } from "@/components/mealmate-logo";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,11 +19,13 @@ export const Route = createFileRoute("/auth")({
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),
+  validateSearch: (s: Record<string, unknown>): { mode?: "signin" | "signup" } =>
+    s["mode"] === "signup" ? { mode: "signup" } : s["mode"] === "signin" ? { mode: "signin" } : {},
   component: AuthPage,
 });
 
 function getAuthRedirectUrl(path: string): string {
-  const configured = import.meta.env["VITE_SUPABASE_REDIRECT_URL"] || process.env["NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL"];
+  const configured = import.meta.env["VITE_SUPABASE_REDIRECT_URL"] as string | undefined;
   if (configured) {
     const base = configured.replace(/\/$/, "");
     return `${base}${path}`;
@@ -43,7 +46,9 @@ function extractErrorMessage(err: unknown, fallback: string): string {
 function AuthPage() {
   const navigate = useNavigate();
   const { user, loading } = useSession();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const search = Route.useSearch();
+  const [mode, setMode] = useState<"signin" | "signup">(search.mode ?? "signin");
+  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -165,6 +170,7 @@ function AuthPage() {
             <Input
               id="email"
               type="email"
+              autoComplete="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -173,15 +179,30 @@ function AuthPage() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                required
+                minLength={6}
+                autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground hover:text-foreground"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {mode === "signup" && (
+              <p className="text-xs text-muted-foreground">At least 6 characters.</p>
+            )}
           </div>
           <Button type="submit" className="w-full" disabled={busy}>
             {busy ? (
@@ -240,6 +261,11 @@ function AuthPage() {
           >
             {mode === "signin" ? "Create an account" : "Sign in"}
           </button>
+        </p>
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          By continuing you agree to our{" "}
+          <Link to="/legal/terms" className="underline hover:text-foreground">Terms</Link> and{" "}
+          <Link to="/legal/privacy" className="underline hover:text-foreground">Privacy Policy</Link>.
         </p>
       </div>
     </main>
