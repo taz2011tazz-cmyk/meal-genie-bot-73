@@ -32,6 +32,7 @@ function Tab({
     <Link
       to={to}
       aria-label={label}
+      data-tour={label.toLowerCase()}
       className={cn(
         "group relative flex flex-col items-center gap-1 rounded-xl px-2 py-2 text-[10px] font-semibold transition-colors",
         active ? "text-primary" : "text-muted-foreground hover:text-foreground",
@@ -61,6 +62,7 @@ export function BottomNav() {
         <Link
           to="/chat"
           aria-label="Ask the AI chef"
+          data-tour="chef"
           className="mx-auto -mt-6 flex h-14 w-14 items-center justify-center rounded-full border border-border bg-card shadow-lg ring-4 ring-background transition-transform hover:scale-105 active:scale-95"
         >
           <Mascot size={36} />
