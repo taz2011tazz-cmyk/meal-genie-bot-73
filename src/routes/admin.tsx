@@ -113,7 +113,7 @@ function ManagedRestaurantsTab() {
     setBusy(true);
     try {
       const result = await createManagedRestaurant({ data: { email, name, ownerName } });
-      toast.success(`Invite sent. One-month trial ends ${format(new Date(result.trialEndsAt), "PPP")}.`);
+      toast.success("Invite sent. The restaurant will appear once approved.");
       setEmail("");
       setName("");
       setOwnerName("");

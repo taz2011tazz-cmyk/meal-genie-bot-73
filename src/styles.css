@@ -396,3 +396,31 @@ img { transition: opacity 260ms var(--ease-md3-decel), transform 500ms var(--eas
   button, [role="button"], .md3-surface { transition: none; }
   button:not(:disabled):active, [role="button"]:active { transform: none; }
 }
+
+/* ---------- Mascot themes: accent-only on top of the black & white core ---------- */
+:root {
+  --brand: oklch(0.12 0 0);
+  --brand-dark: oklch(0.98 0 0);
+  --brand-foreground: oklch(0.99 0 0);
+}
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+}
+html[data-mascot]:not([data-mascot="classic"]) {
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  --ring: var(--brand);
+}
+html.dark[data-mascot]:not([data-mascot="classic"]),
+html[data-mascot]:not([data-mascot="classic"]) .dark {
+  --brand: var(--brand-dark);
+  --primary: var(--brand-dark);
+  --ring: var(--brand-dark);
+}
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 280ms ease, color 280ms ease, border-color 280ms ease, fill 280ms ease !important;
+}
