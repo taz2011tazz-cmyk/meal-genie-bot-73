@@ -876,6 +876,8 @@ export type Database = {
           onboarding_completed: boolean
           post_count: number
           preferences: Json
+          theme: string
+          tour_completed: boolean
           updated_at: string
           username: string | null
           weight_kg: number | null
@@ -902,6 +904,8 @@ export type Database = {
           onboarding_completed?: boolean
           post_count?: number
           preferences?: Json
+          theme?: string
+          tour_completed?: boolean
           updated_at?: string
           username?: string | null
           weight_kg?: number | null
@@ -928,6 +932,8 @@ export type Database = {
           onboarding_completed?: boolean
           post_count?: number
           preferences?: Json
+          theme?: string
+          tour_completed?: boolean
           updated_at?: string
           username?: string | null
           weight_kg?: number | null
