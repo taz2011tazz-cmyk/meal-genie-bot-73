@@ -31,6 +31,7 @@ import { Route as RestaurantsRouteImport } from './routes/restaurants'
 import { Route as ScanRouteImport } from './routes/scan'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SupportRouteImport } from './routes/support'
+import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
@@ -150,6 +151,11 @@ const SupportRoute = SupportRouteImport.update({
   path: '/support',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/scan': typeof ScanRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
+  '/welcome': typeof WelcomeRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/scan': typeof ScanRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
+  '/welcome': typeof WelcomeRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -280,6 +288,7 @@ export interface FileRoutesById {
   '/scan': typeof ScanRoute
   '/settings': typeof SettingsRoute
   '/support': typeof SupportRoute
+  '/welcome': typeof WelcomeRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -314,6 +323,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/settings'
     | '/support'
+    | '/welcome'
     | '/auth/callback'
     | '/legal/privacy'
     | '/legal/terms'
@@ -346,6 +356,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/settings'
     | '/support'
+    | '/welcome'
     | '/auth/callback'
     | '/legal/privacy'
     | '/legal/terms'
@@ -378,6 +389,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/settings'
     | '/support'
+    | '/welcome'
     | '/auth/callback'
     | '/legal/privacy'
     | '/legal/terms'
@@ -411,6 +423,7 @@ export interface RootRouteChildren {
   ScanRoute: typeof ScanRoute
   SettingsRoute: typeof SettingsRoute
   SupportRoute: typeof SupportRoute
+  WelcomeRoute: typeof WelcomeRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalTermsRoute: typeof LegalTermsRoute
   OrderIdRoute: typeof OrderIdRoute
@@ -575,6 +588,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/callback': {
       id: '/auth/callback'
       path: '/callback'
@@ -678,6 +698,7 @@ const rootRouteChildren: RootRouteChildren = {
   ScanRoute: ScanRoute,
   SettingsRoute: SettingsRoute,
   SupportRoute: SupportRoute,
+  WelcomeRoute: WelcomeRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalTermsRoute: LegalTermsRoute,
   OrderIdRoute: OrderIdRoute,
