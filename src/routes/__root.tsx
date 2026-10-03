@@ -18,11 +18,13 @@ import { BottomNav } from "@/components/bottom-nav";
 import { MarketplaceBottomNav } from "@/components/restaurant/marketplace-bottom-nav";
 
 import { AuthGate } from "@/components/auth-gate";
+import { MascotThemeProvider } from "@/hooks/use-mascot-theme";
+import { THEME_BOOT_SCRIPT } from "@/lib/mascot-theme";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LocaleProvider } from "@/components/locale-provider";
 import { UpgradeModalProvider } from "@/components/upgrade-modal";
-import { shouldOfferOnboarding } from "@/lib/preferences";
+import { hasSeenTour } from "@/lib/preferences";
 import { useSession } from "@/hooks/use-session";
 import { useShellMetrics } from "@/hooks/use-shell-metrics";
 
@@ -147,6 +149,7 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
@@ -164,22 +167,37 @@ function RootComponent() {
   const { user } = useSession();
   const isMarketplace =
     pathname === "/restaurants" || pathname.startsWith("/restaurant/");
-  const showAppHeader = pathname !== "/" && !isMarketplace;
+  const isFlow = pathname === "/welcome" || pathname === "/onboarding" || pathname.startsWith("/auth");
+  const showAppHeader = pathname !== "/" && !isMarketplace && !isFlow;
   useShellMetrics(showAppHeader ? "with-header" : "no-header");
 
-  // First open: the 8-question setup comes before sign-up. Signed-in users
-  // who already finished onboarding go straight to the app.
+  // First open (signed out): welcome + tour. Signed in without onboarding: personal setup.
   useEffect(() => {
-    if (pathname !== "/" || user) return;
-    if (shouldOfferOnboarding()) {
-      void router.navigate({ to: "/onboarding", replace: true });
-    }
+    if (user || pathname !== "/") return;
+    if (!hasSeenTour()) void router.navigate({ to: "/welcome", replace: true });
   }, [pathname, router, user]);
 
   useEffect(() => {
-    if (pathname !== "/onboarding" || shouldOfferOnboarding()) return;
-    void router.navigate({ to: "/", replace: true });
-  }, [pathname, router]);
+    if (!user || pathname === "/onboarding" || pathname.startsWith("/auth") || pathname === "/reset-password") return;
+    let active = true;
+    supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("[onboarding] status check failed", error);
+          return;
+        }
+        if (active && data && !data.onboarding_completed) {
+          void router.navigate({ to: "/onboarding", replace: true });
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [user, pathname, router]);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
@@ -194,6 +212,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
+        <MascotThemeProvider>
         <LocaleProvider>
           <UpgradeModalProvider>
             <div className={`h-dvh w-full overflow-hidden bg-background ${isMarketplace ? "marketplace-dark" : ""}`}>
@@ -211,11 +230,12 @@ function RootComponent() {
                   </AuthGate>
                 </div>
               </div>
-              {isMarketplace ? <MarketplaceBottomNav /> : <BottomNav />}
+              {isMarketplace ? <MarketplaceBottomNav /> : pathname === "/onboarding" ? null : <BottomNav />}
             </div>
             <Toaster position="top-center" />
           </UpgradeModalProvider>
         </LocaleProvider>
+        </MascotThemeProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

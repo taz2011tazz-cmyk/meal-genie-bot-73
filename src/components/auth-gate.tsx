@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { Loader2, MailWarning, ChefHat } from "lucide-react";
+import { Loader2, MailWarning } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 // MealMate requires an account: onboarding first, then sign-up, then the app.
 // Only these routes are reachable without a signed-in, verified user.
-const PUBLIC_PREFIXES = ["/auth", "/onboarding", "/reset-password"];
+const PUBLIC_PREFIXES = ["/auth", "/welcome", "/reset-password", "/legal", "/about", "/support"];
 
 // Inactive sessions are signed out after this window.
 const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
@@ -75,10 +75,7 @@ function SignInPrompt() {
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-16">
       <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 text-center shadow-sm">
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-          <ChefHat className="h-6 w-6" />
-        </span>
-        <h1 className="mt-4 font-display text-2xl">Sign in to continue</h1>
+        <h1 className="font-display text-2xl">Sign in to continue</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Create your free MealMate account to unlock your personalised recipes, meal plans
           and restaurant picks.

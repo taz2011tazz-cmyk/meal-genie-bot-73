@@ -1,28 +1,23 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Check, Plus, Sparkles, X } from "lucide-react";
-import { Mascot } from "@/components/mascot";
-import { MealMateLogo } from "@/components/mealmate-logo";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { ArrowLeft, Check, Crown, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { MascotMark } from "@/components/mealmate-logo";
 import { usePreferences } from "@/hooks/use-preferences";
-import { EMPTY_PREFERENCES, markOnboardingSeen, type FoodPreferences } from "@/lib/preferences";
+import { useSession } from "@/hooks/use-session";
+import { supabase } from "@/integrations/supabase/client";
+import { type FoodPreferences } from "@/lib/preferences";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "Let's get to know you — MealMate" },
-      {
-        name: "description",
-        content:
-          "Answer a few quick questions and MealMate will personalise your recipes, meal plans and restaurant picks.",
-      },
-      { property: "og:title", content: "Let's get to know you — MealMate" },
-      {
-        property: "og:description",
-        content: "Personalise MealMate around your goals, tastes, allergies, time and budget.",
-      },
+      { title: "Personalise MealMate" },
+      { name: "description", content: "Tell MealMate what you enjoy so recipes, plans and restaurants fit you." },
+      { property: "og:title", content: "Personalise MealMate" },
+      { property: "og:description", content: "Tell MealMate what you enjoy so recipes, plans and restaurants fit you." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -30,471 +25,211 @@ export const Route = createFileRoute("/onboarding")({
   component: OnboardingPage,
 });
 
-type SingleStep = {
-  kind: "single";
-  key: "goal" | "meals_per_day" | "cooking_level" | "cooking_time" | "food_budget";
-  title: string;
-  hint?: string;
-  options: string[];
-};
-type MultiStep = {
-  kind: "multi";
-  key: "favorite_foods" | "preferred_features";
-  title: string;
-  hint?: string;
-  options: string[];
-};
-type TokensStep = {
-  kind: "tokens";
-  key: "avoid";
-  title: string;
-  hint?: string;
-  groups: { key: "allergies" | "dietary_restrictions" | "disliked_foods"; label: string; suggestions: string[] }[];
-};
-type Step = SingleStep | MultiStep | TokensStep;
+const FOOD_STYLES = ["Home cooking", "Fast food", "Healthy", "High protein", "Vegetarian", "Vegan", "Comfort food", "African cuisine", "Italian", "Asian", "Desserts", "Something else"];
+const PRIORITIES = ["Discover restaurants", "Cook at home", "Plan meals", "Eat healthier", "Save money", "Try new foods", "Order food"];
+const ALLERGIES = ["Nuts", "Peanuts", "Dairy", "Gluten", "Eggs", "Shellfish", "Fish", "Soy"];
+const DIETS = ["Halaal", "Kosher", "Vegetarian", "Vegan", "Low carb", "Dairy-free"];
+const COOKING_LEVELS = ["Beginner", "Comfortable", "Confident"];
+const COOKING_TIMES = ["Under 15 min", "15–30 min", "30–60 min", "No rush"];
 
-const STEPS: Step[] = [
-  {
-    kind: "single",
-    key: "goal",
-    title: "What are you trying to achieve?",
-    hint: "We'll shape your recipes and plans around this.",
-    options: [
-      "Eat healthier",
-      "Lose weight",
-      "Gain weight",
-      "Build muscle",
-      "Save money",
-      "Just enjoy good food",
-    ],
-  },
-  {
-    kind: "multi",
-    key: "favorite_foods",
-    title: "What kind of food do you enjoy?",
-    hint: "Pick as many as you like.",
-    options: [
-      "Fast Food",
-      "Home Cooking",
-      "Healthy",
-      "High Protein",
-      "Vegetarian",
-      "Vegan",
-      "Halal",
-      "Desserts",
-      "African Food",
-      "International",
-    ],
-  },
-  {
-    kind: "tokens",
-    key: "avoid",
-    title: "Any foods you don't eat?",
-    hint: "We'll keep these out of your recommendations.",
-    groups: [
-      {
-        key: "allergies",
-        label: "Allergies",
-        suggestions: ["Peanuts", "Tree nuts", "Shellfish", "Eggs", "Dairy", "Gluten", "Soy", "Sesame", "Fish"],
-      },
-      {
-        key: "dietary_restrictions",
-        label: "Dietary restrictions",
-        suggestions: ["Halal", "Kosher", "Vegetarian", "Vegan", "Pescatarian", "No pork", "No beef", "Low carb", "Low sugar"],
-      },
-      {
-        key: "disliked_foods",
-        label: "Foods you dislike",
-        suggestions: ["Mushrooms", "Olives", "Liver", "Brinjal", "Coriander", "Blue cheese", "Anchovies", "Beetroot"],
-      },
-    ],
-  },
-  {
-    kind: "single",
-    key: "meals_per_day",
-    title: "How many meals do you usually eat?",
-    options: ["1–2", "3", "4+", "It changes every day"],
-  },
-  {
-    kind: "single",
-    key: "cooking_level",
-    title: "What's your cooking level?",
-    options: ["Beginner", "I can cook a little", "Intermediate", "Advanced"],
-  },
-  {
-    kind: "single",
-    key: "cooking_time",
-    title: "How much time do you normally have to cook?",
-    options: ["Under 15 minutes", "15–30 minutes", "30–60 minutes", "I enjoy taking my time"],
-  },
-  {
-    kind: "single",
-    key: "food_budget",
-    title: "What's your food budget?",
-    options: ["Budget friendly", "Moderate", "Flexible"],
-  },
-  {
-    kind: "multi",
-    key: "preferred_features",
-    title: "What should MealMate focus on for you?",
-    hint: "Pick as many as you like.",
-    options: [
-      "Recipes",
-      "Meal planning",
-      "Restaurants",
-      "Saving money",
-      "Nutrition",
-      "Grocery shopping",
-    ],
-  },
-];
+type Phase = 0 | 1 | 2 | "saving" | "done";
 
-function OnboardingPage() {
-  const navigate = useNavigate();
-  const { preferences, save } = usePreferences();
-  const [draft, setDraft] = useState<FoodPreferences>(() => ({
-    ...EMPTY_PREFERENCES,
-    ...preferences,
-  }));
-  const [index, setIndex] = useState(0);
-  const [direction, setDirection] = useState<"forward" | "back">("forward");
-  const [done, setDone] = useState(false);
-  const [busy, setBusy] = useState(false);
+function toggle(list: string[], v: string) {
+  return list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
+}
 
-  const leaving = useRef(false);
-  const finishing = useRef(false);
-
-  const step = STEPS[index]!;
-  const total = STEPS.length;
-  const progress = useMemo(() => ((index + 1) / total) * 100, [index, total]);
-
-  function next() {
-    if (index + 1 < total) {
-      setDirection("forward");
-      setIndex(index + 1);
-    } else {
-      void finish();
-    }
-  }
-
-  function back() {
-    if (index === 0) return;
-    setDirection("back");
-    setIndex(index - 1);
-  }
-
-  const finish = useCallback(async () => {
-    if (finishing.current) return;
-    finishing.current = true;
-    setBusy(true);
-    try {
-      await save({ ...draft, onboarding_completed: true });
-      markOnboardingSeen();
-      setDone(true);
-    } finally {
-      finishing.current = false;
-      setBusy(false);
-    }
-  }, [draft, save]);
-
-  function skipSetup() {
-    if (leaving.current) return;
-    leaving.current = true;
-    markOnboardingSeen();
-    navigate({ to: "/auth", replace: true });
-  }
-
-  if (done) {
-    return (
-      <ReadyScreen
-        onRestart={() => {
-          setDone(false);
-          setIndex(0);
-        }}
-      />
-    );
-  }
-
-  const canContinue =
-    step.kind === "single"
-      ? Boolean(draft[step.key])
-      : step.kind === "multi"
-        ? draft[step.key].length > 0
-        : true;
-
+function Chip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
   return (
-    <main className="fixed inset-0 z-[60] flex flex-col overflow-hidden overscroll-none bg-background px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
-      <div className="mx-auto flex h-full w-full max-w-md flex-col">
-        <header className="flex h-11 shrink-0 items-center justify-between">
-          <button
-            type="button"
-            onClick={back}
-            disabled={index === 0}
-            aria-label="Previous question"
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-border text-foreground transition-opacity disabled:opacity-30"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <span className="text-xs font-semibold text-muted-foreground">
-            {index + 1} of {total}
-          </span>
-          <button
-            type="button"
-            onClick={skipSetup}
-            className="flex h-11 min-w-[4.5rem] items-center justify-center rounded-full bg-secondary px-4 text-sm font-semibold text-secondary-foreground active:scale-95"
-          >
-            Skip
-          </button>
-        </header>
-
-        <div className="mt-3 h-2 w-full shrink-0 overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        <div className="mt-4 flex h-[52px] shrink-0 items-center gap-3">
-          <MealMateLogo imageClassName="size-10" className="shrink-0" />
-          <div className="h-[52px] w-[52px] shrink-0">
-            <Mascot size={52} mood="happy" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="truncate font-display text-2xl leading-tight">Let's get to know you 🍽️</h1>
-            <p className="truncate text-xs text-muted-foreground">A few quick taps and MealMate is yours.</p>
-          </div>
-        </div>
-
-      <section
-        key={index}
-        className={cn(
-          "mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-3xl border border-border bg-card p-5 shadow-sm",
-          direction === "forward" ? "step-in-right" : "step-in-left",
-        )}
-      >
-        <h2 className="font-display text-xl">{step.title}</h2>
-        {"hint" in step && step.hint && (
-          <p className="mt-1 text-sm text-muted-foreground">{step.hint}</p>
-        )}
-
-        {step.kind === "single" && (
-          <div className="mt-5 grid gap-2">
-            {step.options.map((opt) => {
-              const active = draft[step.key] === opt;
-              return (
-                <button
-                  key={opt}
-                  type="button"
-                  onClick={() => setDraft({ ...draft, [step.key]: active ? null : opt })}
-                  className={cn(
-                    "flex items-center justify-between rounded-2xl border px-4 py-3.5 text-left text-sm font-medium transition-all active:scale-[0.98]",
-                    active
-                      ? "border-primary bg-primary/10 text-foreground"
-                      : "border-border bg-background hover:border-primary/40",
-                  )}
-                >
-                  {opt}
-                  <span
-                    className={cn(
-                      "flex h-5 w-5 items-center justify-center rounded-full border",
-                      active ? "border-primary bg-primary text-primary-foreground" : "border-border",
-                    )}
-                  >
-                    {active && <Check className="h-3 w-3" />}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {step.kind === "multi" && (
-          <div className="mt-5 flex flex-wrap gap-2">
-            {step.options.map((opt) => {
-              const list = draft[step.key];
-              const active = list.includes(opt);
-              return (
-                <button
-                  key={opt}
-                  type="button"
-                  onClick={() =>
-                    setDraft({
-                      ...draft,
-                      [step.key]: active ? list.filter((x) => x !== opt) : [...list, opt],
-                    })
-                  }
-                  className={cn(
-                    "rounded-full border px-4 py-2 text-sm font-medium transition-all active:scale-95",
-                    active
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-background text-foreground hover:border-primary/40",
-                  )}
-                >
-                  {opt}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {step.kind === "tokens" && (
-          <div className="mt-5 space-y-5">
-            {step.groups.map((group) => (
-              <TokenField
-                key={group.key}
-                label={group.label}
-                suggestions={group.suggestions}
-                values={draft[group.key]}
-                onChange={(values) => setDraft({ ...draft, [group.key]: values })}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <div className="mt-5 space-y-2">
-        <Button
-          className="h-12 w-full rounded-2xl text-base font-semibold"
-          onClick={next}
-          disabled={busy || !canContinue}
-        >
-          {index + 1 === total ? "Finish" : "Continue"}
-        </Button>
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={next}
-            className="rounded-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-          >
-            Skip question
-          </button>
-          <button
-            type="button"
-            onClick={skipSetup}
-            className="rounded-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-          >
-            Skip setup
-          </button>
-        </div>
-      </div>
-      </div>
-    </main>
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={() => {
+        try {
+          navigator.vibrate?.(6);
+        } catch {
+          /* unsupported */
+        }
+        onClick();
+      }}
+      className={cn(
+        "flex items-center gap-1.5 rounded-full border px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-95",
+        selected ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:border-foreground/40",
+      )}
+    >
+      {selected && <Check className="h-3.5 w-3.5 motion-safe:animate-in motion-safe:zoom-in-50" />}
+      {label}
+    </button>
   );
 }
 
-function TokenField({
-  label,
-  suggestions,
-  values,
-  onChange,
-}: {
-  label: string;
-  suggestions: string[];
-  values: string[];
-  onChange: (values: string[]) => void;
-}) {
-  const [term, setTerm] = useState("");
-  const matches = suggestions.filter(
-    (s) => !values.includes(s) && s.toLowerCase().includes(term.trim().toLowerCase()),
-  );
+function OnboardingPage() {
+  const navigate = useNavigate();
+  const { user } = useSession();
+  const { preferences, save } = usePreferences();
+  const [phase, setPhase] = useState<Phase>(0);
+  const [draft, setDraft] = useState<FoodPreferences>(preferences);
+  const [firstName, setFirstName] = useState("");
 
-  function add(value: string) {
-    const v = value.trim();
-    if (!v || values.some((x) => x.toLowerCase() === v.toLowerCase())) return;
-    onChange([...values, v]);
-    setTerm("");
+  useEffect(() => setDraft(preferences), [preferences]);
+
+  useEffect(() => {
+    if (!user) return;
+    const meta = user.user_metadata as Record<string, unknown>;
+    const name = (meta["display_name"] ?? meta["full_name"] ?? meta["name"] ?? user.email?.split("@")[0] ?? "") as string;
+    setFirstName(name.split(" ")[0] ?? "");
+  }, [user]);
+
+  async function finish(next: FoodPreferences) {
+    setPhase("saving");
+    try {
+      await save({ ...next, onboarding_completed: true });
+      if (user) {
+        const { error } = await supabase.from("profiles").update({ tour_completed: true } as never).eq("id", user.id);
+        if (error) console.error("[onboarding] tour flag", error);
+      }
+      setPhase("done");
+    } catch {
+      toast.error("We couldn't save your preferences. Check your connection and try again.");
+      setPhase(2);
+    }
   }
 
+  const skip = () => finish(draft);
+
+  if (phase === "saving") {
+    return (
+      <Shell>
+        <div className="flex flex-1 flex-col items-center justify-center text-center" role="status">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <h1 className="mt-6 font-display text-3xl">Building your MealMate.</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Saving your preferences to your account…</p>
+        </div>
+      </Shell>
+    );
+  }
+
+  if (phase === "done") {
+    return (
+      <Shell>
+        <div className="flex flex-1 flex-col items-center justify-center text-center motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-500">
+          <MascotMark className="size-28 rounded-3xl" />
+          <h1 className="mt-8 font-display text-4xl">You're all set.</h1>
+          <p className="mt-2 text-base text-muted-foreground">
+            Welcome to MealMate{firstName ? `, ${firstName}` : ""}.
+          </p>
+        </div>
+        <Button size="lg" className="h-14 w-full rounded-full text-base" onClick={() => navigate({ to: "/", replace: true })}>
+          Start Exploring
+        </Button>
+      </Shell>
+    );
+  }
+
+  const step = phase;
+  const titles = ["What's your food style?", "What's most important to you?", "Tell us a little more."];
+
+  return (
+    <Shell>
+      <div className="flex items-center justify-between">
+        {step > 0 ? (
+          <button type="button" aria-label="Back" onClick={() => setPhase((step - 1) as Phase)} className="-ml-2 rounded-full p-2 hover:bg-muted">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+        ) : (
+          <span className="h-9 w-9" />
+        )}
+        <div className="flex gap-1.5" aria-label={`Step ${step + 1} of 3`}>
+          {[0, 1, 2].map((i) => (
+            <span key={i} className={cn("h-1.5 rounded-full transition-all duration-300", i === step ? "w-6 bg-primary" : i < step ? "w-1.5 bg-primary" : "w-1.5 bg-border")} />
+          ))}
+        </div>
+        <button type="button" onClick={skip} className="rounded-full px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground">
+          Skip
+        </button>
+      </div>
+
+      <div key={step} className="mt-8 flex-1 overflow-y-auto motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300">
+        <h1 className="font-display text-3xl leading-tight sm:text-4xl">{titles[step]}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {step === 2 ? "Optional — this keeps unsafe ingredients out of your suggestions." : "Choose as many as you like."}
+        </p>
+
+        {step === 0 && (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {FOOD_STYLES.map((o) => (
+              <Chip key={o} label={o} selected={draft.favorite_foods.includes(o)} onClick={() => setDraft((d) => ({ ...d, favorite_foods: toggle(d.favorite_foods, o) }))} />
+            ))}
+          </div>
+        )}
+
+        {step === 1 && (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {PRIORITIES.map((o) => (
+              <Chip key={o} label={o} selected={draft.preferred_features.includes(o)} onClick={() => setDraft((d) => ({ ...d, preferred_features: toggle(d.preferred_features, o) }))} />
+            ))}
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="mt-6 space-y-6">
+            <Group title="Allergies">
+              {ALLERGIES.map((o) => (
+                <Chip key={o} label={o} selected={draft.allergies.includes(o)} onClick={() => setDraft((d) => ({ ...d, allergies: toggle(d.allergies, o) }))} />
+              ))}
+            </Group>
+            <Group title="Dietary needs">
+              {DIETS.map((o) => (
+                <Chip key={o} label={o} selected={draft.dietary_restrictions.includes(o)} onClick={() => setDraft((d) => ({ ...d, dietary_restrictions: toggle(d.dietary_restrictions, o) }))} />
+              ))}
+            </Group>
+            <Group title="Cooking level">
+              {COOKING_LEVELS.map((o) => (
+                <Chip key={o} label={o} selected={draft.cooking_level === o} onClick={() => setDraft((d) => ({ ...d, cooking_level: d.cooking_level === o ? null : o }))} />
+              ))}
+            </Group>
+            <Group title="Time to cook">
+              {COOKING_TIMES.map((o) => (
+                <Chip key={o} label={o} selected={draft.cooking_time === o} onClick={() => setDraft((d) => ({ ...d, cooking_time: d.cooking_time === o ? null : o }))} />
+              ))}
+            </Group>
+            <p className="flex items-center gap-2 rounded-2xl border border-border bg-card p-4 text-xs text-muted-foreground">
+              <Crown className="h-4 w-4 shrink-0 text-primary" />
+              MealMate Premium adds unlimited AI meal plans and extra themes. You can explore it any time from your profile.
+            </p>
+          </div>
+        )}
+      </div>
+
+      <Button
+        size="lg"
+        className="mt-6 h-14 w-full rounded-full text-base active:scale-[0.98]"
+        onClick={() => (step < 2 ? setPhase((step + 1) as Phase) : finish(draft))}
+      >
+        {step < 2 ? "Continue" : "Finish"}
+      </Button>
+    </Shell>
+  );
+}
+
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-sm font-semibold text-foreground">{label}</p>
-      {values.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
-          {values.map((v) => (
-            <span
-              key={v}
-              className="flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1.5 text-xs font-medium text-foreground"
-            >
-              {v}
-              <button
-                type="button"
-                aria-label={`Remove ${v}`}
-                onClick={() => onChange(values.filter((x) => x !== v))}
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-      <div className="mt-2 flex gap-2">
-        <Input
-          value={term}
-          onChange={(e) => setTerm(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229) {
-              e.preventDefault();
-              add(term);
-            }
-          }}
-          placeholder={`Search or add ${label.toLowerCase()}`}
-          className="h-11 rounded-2xl"
-        />
-        <Button
-          type="button"
-          variant="outline"
-          className="h-11 rounded-2xl"
-          onClick={() => add(term)}
-          disabled={!term.trim()}
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
-      {matches.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
-          {matches.slice(0, 6).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => add(s)}
-              className="rounded-full border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
-            >
-              + {s}
-            </button>
-          ))}
-        </div>
-      )}
+      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h2>
+      <div className="flex flex-wrap gap-2">{children}</div>
     </div>
   );
 }
 
-function ReadyScreen({ onRestart }: { onRestart: () => void }) {
-  const navigate = useNavigate();
-  const leaving = useRef(false);
-
-  function goToAuth() {
-    if (leaving.current) return;
-    leaving.current = true;
-    navigate({ to: "/auth", replace: true });
-  }
-
-  return (
-    <main className="fixed inset-0 z-[60] flex flex-col items-center justify-center overflow-hidden overscroll-none bg-background px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] text-center">
-      <div className="step-in-right w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-sm">
-        <Mascot size={88} mood="celebrate" className="mx-auto" />
-        <h1 className="mt-4 font-display text-3xl">Your MealMate is ready 🍽️</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Based on your answers, we&apos;ll personalize your meals, recipes, restaurants and recommendations.
-        </p>
-        <div className="mt-6 space-y-2">
-          <Button className="h-12 w-full rounded-2xl text-base font-semibold" onClick={goToAuth}>
-            <Sparkles className="mr-2 h-4 w-4" /> Create my account
-          </Button>
-          <Button variant="outline" className="h-12 w-full rounded-2xl" onClick={onRestart}>
-            Edit my preferences
-          </Button>
-        </div>
+function Shell({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-[max(env(safe-area-inset-top),1rem)]">
+        {children}
       </div>
-    </main>
+    </div>,
+    document.body,
   );
 }

@@ -1,6 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, UtensilsCrossed, CalendarDays, User } from "lucide-react";
-import { Mascot } from "@/components/mascot";
+import { Home, UtensilsCrossed, CalendarDays, User, ChefHat } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -65,7 +64,7 @@ export function BottomNav() {
           data-tour="chef"
           className="mx-auto -mt-6 flex h-14 w-14 items-center justify-center rounded-full border border-border bg-card shadow-lg ring-4 ring-background transition-transform hover:scale-105 active:scale-95"
         >
-          <Mascot size={36} />
+          <ChefHat className="h-6 w-6 text-primary" />
         </Link>
         {RIGHT_TABS.map((t) => (
           <Tab key={t.to} {...t} active={isActive(t.to)} />

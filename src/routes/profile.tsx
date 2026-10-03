@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/components/theme-provider";
 import { GamificationCard } from "@/components/gamification-card";
+import { ThemePicker } from "@/components/theme-picker";
 import {
   Select,
   SelectContent,
@@ -294,6 +295,7 @@ function SettingsPage() {
       {/* XP, levels, streaks & challenges */}
       <GamificationCard />
 
+      <ThemePicker />
       <Section title="Profile" items={profileItems} />
       <Section title="Account" items={accountItems} />
 

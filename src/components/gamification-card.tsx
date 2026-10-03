@@ -3,7 +3,6 @@ import { Flame, Trophy, Check, Lock, Gem } from "lucide-react";
 import { toast } from "sonner";
 import { getGamification, claimElite } from "@/lib/xp.functions";
 import { formatXp } from "@/lib/xp";
-import { Mascot } from "@/components/mascot";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/hooks/use-session";
@@ -61,7 +60,7 @@ export function GamificationCard() {
     <section className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm">
       {/* Level header */}
       <div className="flex items-center gap-4">
-        <Mascot size={64} mood={level.index >= 3 ? "celebrate" : "happy"} />
+        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary"><Trophy className="h-8 w-8" /></span>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-2">
             <h2 className="truncate font-display text-2xl leading-tight">
