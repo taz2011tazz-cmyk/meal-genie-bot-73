@@ -67,8 +67,10 @@ export function usePreferences() {
         const { updated_at: _drop, ...rest } = next;
         try {
           await saveMyPreferences({ data: rest });
-        } catch {
-          // keep the local copy; it syncs on next sign-in
+        } catch (err) {
+          // Local copy is kept; surface the failure so callers can tell the user.
+          console.error("[preferences] save failed", err);
+          throw err;
         }
       }
     },
