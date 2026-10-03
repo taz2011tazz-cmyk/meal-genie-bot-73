@@ -14,7 +14,7 @@
 - [x] Confirm the project backend is enabled and connected
 - [x] Fix broken build (AI helpers), restaurant feed/detail/checkout queries against the real schema
 - [x] Auth: Google via managed sign-in, duplicate-email and weak-password errors, admin email bypass removed
-- [ ] Mascot theme system: selectable mascot themes (5 provided so far; 2 missing), accent-only, saved to profile/local
-- [ ] Single logo per screen; mascot in header, splash, loading, onboarding
-- [ ] Welcome screen + interactive tour → Create account / Sign in → personal onboarding → "You're all set"
+- [x] Mascot theme system (5 provided themes + Classic), accent-only, saved to account/device
+- [x] Single logo per screen (extra mascot icons replaced)
+- [x] Welcome + tour → Create account / Sign in → personal onboarding → "You're all set"
 - [ ] End-to-end real-user verification (signup, refresh, sign out, sign in)

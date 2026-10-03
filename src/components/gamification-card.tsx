@@ -3,7 +3,6 @@ import { Flame, Trophy, Check, Lock, Gem } from "lucide-react";
 import { toast } from "sonner";
 import { getGamification, claimElite } from "@/lib/xp.functions";
 import { formatXp } from "@/lib/xp";
-import { Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/hooks/use-session";
