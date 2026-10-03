@@ -142,7 +142,7 @@ function AuthPage() {
     <main className="flex flex-1 items-center justify-center px-4 py-16">
       <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-sm">
         <div className="flex flex-col items-center text-center">
-          <MealMateLogo imageClassName="size-14" className="flex-col gap-2" />
+          <MealMateLogo imageClassName="size-16" showName={false} />
           <h1 className="mt-4 font-display text-3xl">
             {mode === "signin" ? "Welcome back" : "Join MealMate"}
           </h1>

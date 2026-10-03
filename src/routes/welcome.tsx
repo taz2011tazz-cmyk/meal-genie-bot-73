@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MascotMark } from "@/components/mealmate-logo";
@@ -44,7 +45,22 @@ function haptic() {
   }
 }
 
+/** Renders above the app shell (header + bottom bar) instead of inside the page. */
+function Overlay({ children }: { children: ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted ? createPortal(children, document.body) : null;
+}
+
 function WelcomePage() {
+  return (
+    <Overlay>
+      <WelcomeFlow />
+    </Overlay>
+  );
+}
+
+function WelcomeFlow() {
   const navigate = useNavigate();
   const [phase, setPhase] = useState<Phase>("welcome");
   const [step, setStep] = useState(0);

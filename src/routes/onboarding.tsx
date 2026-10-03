@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowLeft, Check, Crown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -220,11 +221,15 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+  return createPortal(
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
       <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-[max(env(safe-area-inset-top),1rem)]">
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
