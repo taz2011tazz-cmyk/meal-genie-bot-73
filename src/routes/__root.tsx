@@ -167,7 +167,7 @@ function RootComponent() {
   const { user } = useSession();
   const isMarketplace =
     pathname === "/restaurants" || pathname.startsWith("/restaurant/");
-  const isFlow = pathname === "/welcome" || pathname === "/onboarding";
+  const isFlow = pathname === "/welcome" || pathname === "/onboarding" || pathname.startsWith("/auth");
   const showAppHeader = pathname !== "/" && !isMarketplace && !isFlow;
   useShellMetrics(showAppHeader ? "with-header" : "no-header");
 
