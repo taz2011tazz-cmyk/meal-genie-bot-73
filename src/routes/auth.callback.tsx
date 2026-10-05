@@ -17,7 +17,7 @@ function AuthCallbackPage() {
     const code = params.get("code");
     if (errorDescription) {
       setError(decodeURIComponent(errorDescription.replace(/\+/g, " ")));
-      return;
+      return undefined;
     }
     if (!code) {
       // Implicit flow: tokens arrive in the URL hash and the client stores them automatically.
@@ -36,6 +36,7 @@ function AuthCallbackPage() {
       }
       void navigate({ to: "/", replace: true });
     });
+    return undefined;
   }, [navigate]);
 
   return (
