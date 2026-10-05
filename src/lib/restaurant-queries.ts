@@ -55,6 +55,7 @@ export const approvedRestaurantsQuery = () =>
         .from("restaurants")
         .select(RESTAURANT_PUBLIC_COLUMNS)
         .eq("approval_status", "approved")
+        .eq("is_demo", false)
         .order("name");
       if (error) throw error;
       return ((data ?? []) as any[]).map(mapRestaurant);
@@ -70,6 +71,7 @@ export const restaurantBySlugQuery = (slug: string) =>
         .select(RESTAURANT_PUBLIC_COLUMNS)
         .eq("slug", slug)
         .eq("approval_status", "approved")
+        .eq("is_demo", false)
         .maybeSingle();
       if (error) throw error;
       return data ? mapRestaurant(data) : null;
