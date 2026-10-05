@@ -62,6 +62,17 @@ function AuthPage() {
     if (busy) return;
     setBusy(true);
     try {
+      const host = window.location.hostname;
+      const lovableHosted = /(^|\.)lovable\.app$|(^|\.)lovableproject\.com$|^localhost$/.test(host);
+      if (!lovableHosted) {
+        // Production (e.g. Vercel): Supabase's own Google OAuth, returning to the public callback page.
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: `${window.location.origin}/auth/callback` },
+        });
+        if (error) throw error;
+        return;
+      }
       const { lovable } = await import("@/integrations/lovable");
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,

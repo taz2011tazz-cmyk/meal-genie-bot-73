@@ -1,8 +1,3 @@
-import sunset from "@/assets/mascots/mascot-sunset.webp.asset.json";
-import midnight from "@/assets/mascots/mascot-midnight.webp.asset.json";
-import ocean from "@/assets/mascots/mascot-ocean.webp.asset.json";
-import cherry from "@/assets/mascots/mascot-cherry.webp.asset.json";
-import matcha from "@/assets/mascots/mascot-matcha.webp.asset.json";
 
 export type MascotThemeId = "classic" | "sunset" | "midnight" | "ocean" | "cherry" | "matcha";
 
@@ -19,12 +14,12 @@ export type MascotTheme = {
 };
 
 export const MASCOT_THEMES: MascotTheme[] = [
-  { id: "classic", name: "Classic", image: "/favicon.png", accent: "oklch(0.12 0 0)", accentDark: "oklch(0.98 0 0)", accentForeground: "oklch(0.99 0 0)", premium: false },
-  { id: "sunset", name: "Sunset Kitchen", image: sunset.url, accent: "oklch(0.68 0.17 55)", accentDark: "oklch(0.76 0.16 60)", accentForeground: "oklch(0.15 0.03 50)", premium: true },
-  { id: "midnight", name: "Midnight", image: midnight.url, accent: "oklch(0.5 0.2 275)", accentDark: "oklch(0.7 0.15 275)", accentForeground: "oklch(0.99 0 0)", premium: true },
-  { id: "ocean", name: "Ocean", image: ocean.url, accent: "oklch(0.6 0.14 230)", accentDark: "oklch(0.75 0.12 225)", accentForeground: "oklch(0.15 0.03 230)", premium: true },
-  { id: "cherry", name: "Cherry", image: cherry.url, accent: "oklch(0.55 0.2 15)", accentDark: "oklch(0.7 0.17 12)", accentForeground: "oklch(0.99 0 0)", premium: true },
-  { id: "matcha", name: "Matcha", image: matcha.url, accent: "oklch(0.52 0.12 140)", accentDark: "oklch(0.74 0.13 138)", accentForeground: "oklch(0.99 0 0)", premium: true },
+  { id: "classic", name: "Classic", image: "/mascots/mascot-classic.png", accent: "oklch(0.12 0 0)", accentDark: "oklch(0.98 0 0)", accentForeground: "oklch(0.99 0 0)", premium: false },
+  { id: "sunset", name: "Sunset Kitchen", image: "/mascots/mascot-sunset.webp", accent: "oklch(0.68 0.17 55)", accentDark: "oklch(0.76 0.16 60)", accentForeground: "oklch(0.15 0.03 50)", premium: true },
+  { id: "midnight", name: "Midnight", image: "/mascots/mascot-midnight.webp", accent: "oklch(0.5 0.2 275)", accentDark: "oklch(0.7 0.15 275)", accentForeground: "oklch(0.99 0 0)", premium: true },
+  { id: "ocean", name: "Ocean", image: "/mascots/mascot-ocean.webp", accent: "oklch(0.6 0.14 230)", accentDark: "oklch(0.75 0.12 225)", accentForeground: "oklch(0.15 0.03 230)", premium: true },
+  { id: "cherry", name: "Cherry", image: "/mascots/mascot-cherry.webp", accent: "oklch(0.55 0.2 15)", accentDark: "oklch(0.7 0.17 12)", accentForeground: "oklch(0.99 0 0)", premium: true },
+  { id: "matcha", name: "Matcha", image: "/mascots/mascot-matcha.webp", accent: "oklch(0.52 0.12 140)", accentDark: "oklch(0.74 0.13 138)", accentForeground: "oklch(0.99 0 0)", premium: true },
 ];
 
 export const THEME_STORAGE_KEY = "mealmate.theme.v1";
