@@ -80,6 +80,7 @@ export const marketplaceFeedQuery = () =>
           .from("restaurants")
           .select(RESTAURANT_COLUMNS)
           .eq("approval_status", "approved")
+          .eq("is_demo", false)
           .order("name")
           .limit(60),
         supabase
