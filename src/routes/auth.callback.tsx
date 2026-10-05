@@ -20,8 +20,13 @@ function AuthCallbackPage() {
       return;
     }
     if (!code) {
-      setError("The sign-in link is missing or expired.");
-      return;
+      // Implicit flow: tokens arrive in the URL hash and the client stores them automatically.
+      const timer = window.setTimeout(async () => {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) void navigate({ to: "/", replace: true });
+        else setError("The sign-in link is missing or expired.");
+      }, 300);
+      return () => window.clearTimeout(timer);
     }
 
     supabase.auth.exchangeCodeForSession(code).then(({ error: exchangeError }) => {
