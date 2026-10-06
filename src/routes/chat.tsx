@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { lazy, Suspense, useState } from "react";
 import { toast } from "sonner";
-import { Crown, Loader2, MessageCircleQuestion, Send, Sparkles, Wand2 } from "lucide-react";
+import { Crown, Loader2, Send, Sparkles, Wand2 } from "lucide-react";
+import { MascotMark } from "@/components/mealmate-logo";
 import { askFoodQuestion } from "@/lib/ai.functions";
 import { generateVisualExplanation, type VisualExplanation } from "@/lib/visual.functions";
 // Heavy media player (images + audio narration) — only loaded when a visual answer exists.
@@ -97,9 +98,7 @@ function ChatPage() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-10">
       <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ink text-background">
-          <MessageCircleQuestion className="h-5 w-5" />
-        </span>
+        <MascotMark className="h-12 w-12 shrink-0" alt="MealMate AI" />
         <div>
           <h1 className="font-display text-3xl leading-tight">AI Chat</h1>
           <p className="text-sm text-muted-foreground">Ask anything — get an answer and a visual.</p>
