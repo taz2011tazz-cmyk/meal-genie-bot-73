@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { MealMateLogo } from "@/components/mealmate-logo";
 import { useSession } from "@/hooks/use-session";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
  */
 export function AppHeader() {
   const { user } = useSession();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -33,7 +34,12 @@ export function AppHeader() {
     <header id="app-header" className="fixed inset-x-0 top-0 z-40 bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2" aria-label="MealMate home">
-          <MealMateLogo imageClassName="size-9 rounded-full object-contain" />
+          {/* The AI chat shows the mascot itself — never show it twice on one page. */}
+          {pathname.startsWith("/chat") ? (
+            <span className="font-display text-2xl leading-none">MealMate</span>
+          ) : (
+            <MealMateLogo imageClassName="size-9 rounded-full object-contain" />
+          )}
         </Link>
 
         {user ? (
