@@ -1,4 +1,7 @@
 import { RECIPE_PHOTOS } from "@/assets/recipes/manifest";
+import ackeeImg from "@/assets/recipes/dishes/ackee-and-saltfish.jpg";
+import quinoaImg from "@/assets/recipes/dishes/quinoa-harissa-chicken.jpg";
+import pizzaImg from "@/assets/recipes/dishes/pizza-margherita.jpg";
 
 /**
  * Recipe image matching + delivery.
@@ -83,6 +86,7 @@ const CURATED_ALIASES: Record<string, string> = {
   "chicken-bunny-chow": "chicken-bunny-chow",
   "kota": "kota-south-african-spatlo-7rwhl",
   "kota-south-african-spatlo": "kota-south-african-spatlo-7rwhl",
+  "kota-south-african-street-sandwich": "kota-south-african-spatlo-7rwhl",
   "malva-pudding": "malva-pudding",
   "malva-pudding-mealmate": "malva-pudding",
   "jollof-rice": "west-african-jollof-rice",
@@ -94,14 +98,33 @@ function curatedKey(value: string): string {
   return CURATED_ALIASES[normalized] ?? normalized;
 }
 
+/** Dish photos generated specifically for recipes that had no curated photo. */
+const DISH_PHOTOS: Record<string, string> = {
+  "ackee-and-saltfish": ackeeImg,
+  "mediterranean-quinoa-bowl-with-harissa-chicken": quinoaImg,
+  "pizza-napoletana-margherita": pizzaImg,
+  "pizza-margherita": pizzaImg,
+};
+
+/** Strip the random "-ab12c" suffix some slugs carry. */
+function stripSuffix(key: string): string {
+  return key.replace(/-[a-z0-9]{5}$/, "");
+}
+
 export function curatedRecipeImageUrl(
   r: Pick<ImageRecipeLike, "slug" | "name">,
   size: ImageSize = "card",
 ): string | null {
   const candidates = [r.slug, r.name].filter((value): value is string => Boolean(value?.trim()));
   for (const candidate of candidates) {
-    const photo = RECIPE_PHOTOS[curatedKey(candidate)];
-    if (photo) return photo[size];
+    const key = curatedKey(candidate);
+    for (const k of [key, stripSuffix(key), CURATED_ALIASES[stripSuffix(key)] ?? ""]) {
+      if (!k) continue;
+      const photo = RECIPE_PHOTOS[k];
+      if (photo) return photo[size];
+      const dish = DISH_PHOTOS[k];
+      if (dish) return dish;
+    }
   }
   return null;
 }
