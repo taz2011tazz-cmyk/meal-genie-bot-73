@@ -1,20 +1,6 @@
 # Roadmap
 
-- [x] Build the dark-first restaurant discovery home
-- [x] Connect search, categories, filters, carousel, location, favorites, and cart
-- [x] Align restaurant detail and restaurant navigation styling
-- [x] Verify loading, empty, error, mobile, desktop, and order-entry behavior
-- [x] Remove the forced sign-in screen; account prompt only on account-only pages
-- [x] Personalized 8-question onboarding with skip options and ready screen
-- [x] Guest preferences saved locally and synced to the account on sign-in
-- [x] "Edit my preferences" entry in profile settings
-- [x] Remotely managed sponsored placements, hidden for Premium members
-- [x] Personalized ordering of home recipes and restaurant recommendations
-- [x] Ensure every recipe dish always displays a real image
-- [x] Confirm the project backend is enabled and connected
-- [x] Fix broken build (AI helpers), restaurant feed/detail/checkout queries against the real schema
-- [x] Auth: Google via managed sign-in, duplicate-email and weak-password errors, admin email bypass removed
-- [x] Mascot theme system (5 provided themes + Classic), accent-only, saved to account/device
-- [x] Single logo per screen (extra mascot icons replaced)
-- [x] Welcome + tour → Create account / Sign in → personal onboarding → "You're all set"
-- [ ] End-to-end real-user verification (signup, refresh, sign out, sign in)
+- [ ] Clerk sign-in (incl. Google OAuth via Clerk) on Vercel — blocked: need Clerk domain from Clerk's Supabase integration so the database trusts Clerk sign-ins
+- [ ] Re-point security rules / user IDs to Clerk users (non-breaking mapping, not column type changes)
+- [ ] Add Clerk keys to Vercel as VITE_CLERK_PUBLISHABLE_KEY + CLERK_SECRET_KEY, redeploy, test
+- [ ] Partner dashboard (inspection only so far)
